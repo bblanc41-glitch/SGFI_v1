@@ -1,0 +1,57 @@
+<div class="dashboard-page">
+
+  <!-- En-tête -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Tableau de bord</h2>
+      <p class="page-subtitle">CHU Hassan II — Service Juridique · Vue d'ensemble des dossiers</p>
+    </div>
+    <span class="badge bg-primary px-3 py-2 fs-6">SGFI</span>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="chargement" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Chargement des statistiques…</p>
+  </div>
+
+  <!-- Cartes statistiques -->
+  <div *ngIf="!chargement" class="stats-grid">
+    <div *ngFor="let c of cartes" class="stat-card stat-{{ c.couleur }}">
+      <div class="stat-icon">
+        <i class="bi {{ c.icone }}"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ c.valeur }}</div>
+        <div class="stat-label">{{ c.label }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions rapides -->
+  <div class="actions-section">
+    <h5 class="section-title">Actions rapides</h5>
+    <div class="actions-grid">
+
+      <a routerLink="/liste-dossiers" class="action-card">
+        <i class="bi bi-list-ul action-icon text-primary"></i>
+        <div class="action-label">Liste des dossiers</div>
+        <div class="action-sub">Consulter et gérer tous les dossiers</div>
+      </a>
+
+      <a routerLink="/saisie-manuelle" class="action-card">
+        <i class="bi bi-pencil-square action-icon text-success"></i>
+        <div class="action-label">Saisie manuelle</div>
+        <div class="action-sub">Créer un nouveau dossier manuellement</div>
+      </a>
+
+      <a routerLink="/importation" class="action-card">
+        <i class="bi bi-upload action-icon text-info"></i>
+        <div class="action-label">Importation CCR</div>
+        <div class="action-sub">Importer le fichier Excel de la comptabilité</div>
+      </a>
+
+    </div>
+  </div>
+
+</div>

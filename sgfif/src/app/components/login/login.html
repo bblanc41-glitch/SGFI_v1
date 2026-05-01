@@ -1,0 +1,41 @@
+<div class="page-wrapper">
+  <div class="outer-card">
+    <div class="login-container">
+      <div class="header">
+        <div class="sgfi-label">SGFI</div>
+        <div class="chu-logo">
+          <img src="Logo_chu1.png" class="logo-img" />
+          <div class="chu-text">
+            <span class="chu-name">CHU HASSAN II</span>
+            <span class="chu-sub">Centre Hospitalier Hassan II - Fès</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="subtitle">Système de Gestion des <strong>Factures Impayées</strong></div>
+
+      <div class="instruction">
+        Veuillez entrer votre identifiant et mot de passe pour vous connecter
+      </div>
+
+      <div class="form-field">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <div class="input-row">
+            <label for="username">Identifiant :</label>
+            <input matInput type="text" formControlName="username"  id="username"/>
+          </div>
+
+          <div class="input-row">
+            <label for="password">Mot de passe :</label>
+            <input matInput type="password" formControlName="password" id="password" />
+          </div>
+
+          <div class="btn-row">
+            <span class="errorMessage" *ngIf="errorMessage">{{ errorMessage }}</span>
+            <button mat-raised-button color="primary">Se connecter</button>
+          </div>
+        </form>
+      </div>
+    </div>()
+  </div>
+</div>

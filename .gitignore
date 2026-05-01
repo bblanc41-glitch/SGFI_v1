@@ -1,0 +1,20 @@
+# IDE (Eclipse, STS, VS Code)
+.metadata/
+.plugins/
+.settings/
+.project
+.classpath
+.factorypath
+bin/
+.vscode/
+
+# Build tools
+target/
+node_modules/
+dist/
+.gradle/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db

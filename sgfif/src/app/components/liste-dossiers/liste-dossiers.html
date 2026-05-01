@@ -1,0 +1,86 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Dossiers enregistrés</h3>
+    <input type="text"
+           [(ngModel)]="recherche"
+           placeholder="Rechercher par IP ou bénéficiaire..."
+           class="form-control w-25">
+   
+  </div>
+
+  <!-- Cas : aucun dossier -->
+  <div class="alert alert-info" *ngIf="dossiers.length === 0">
+    Aucun dossier n'est actuellement enregistré dans le système.
+  </div>
+ 
+
+  <table class="table table-hover border" *ngIf="dossiers.length > 0">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>IP Patient</th>
+        <th>N° Facture</th>
+        <th>Bénéficiaire</th>
+        <th>Téléphone</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of dossiersFiltres()">
+        <td>{{ d.idDossier }}</td>
+        <td>{{ d.ip }}</td>
+        <td>{{ d.numeroFacture }}</td>
+        <td>{{ d.beneficiaire || '—' }}</td>
+        <td>{{ d.telephone || '—' }}</td>
+        <td>
+          <span class="badge"
+                [ngClass]="{
+                  'bg-warning text-dark': d.statut === 'en attente de prise en charge',
+                  'bg-success':           d.statut === 'clôturé',
+                  'bg-primary':           d.statut === 'en cours',
+                  'bg-secondary':         !d.statut
+                }">
+            {{ d.statut || 'Importé CCR' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!--
+<div class="container mt-4">
+  <div class="d-flex justify-content-between mb-3">
+    <h3>Dossiers enregistrés</h3>
+    <input type="text" placeholder="Rechercher par CIN ou Nom..." class="form-control w-25">
+  </div>
+  
+  <table class="table table-hover border">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Patient</th>
+        <th>CIN</th>
+        <th>Montant</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of dossiers">
+        <td>{{ d.id }}</td>
+        <td>{{ d.nomPatient }}</td>
+        <td>{{ d.cin }}</td>
+        <td>{{ d.montant }} DH</td>
+        <td>
+          <span class="badge" [ngClass]="{'bg-warning': d.statut === 'en attente de prise en charge'}">
+            {{ d.statut }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noData>
+  <div class="alert alert-info">Aucun dossier n'est actuellement enregistré dans le système.</div>
+</ng-template>-->

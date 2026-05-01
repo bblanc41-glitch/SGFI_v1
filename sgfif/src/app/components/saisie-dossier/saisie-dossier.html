@@ -1,0 +1,96 @@
+<div class="container mt-4">
+  <h2>Saisie manuelle d'un dossier juridique</h2>
+  <p class="text-muted">Service Juridique — CHU Hassan II</p>
+
+  <form (ngSubmit)="validerSaisie()">
+
+    <!--
+      La table "dossiers" contient : ip, numeroFacture, beneficiaire,
+      telephone, statut, referenceInterne, observationJuridique. D'autres champs seront ajouté a la demande du Service Juridique
+  
+    -->
+
+    <div class="mb-3">
+      <label class="form-label">Identifiant Patient (IP) *</label>
+      <input type="text"
+             [(ngModel)]="nouveauDossier.ip"
+             name="ip"
+             class="form-control"
+             placeholder="Ex : IP-2024-00123"
+             required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Numéro de Facture *</label>
+      <input type="text"
+             [(ngModel)]="nouveauDossier.numeroFacture"
+             name="numeroFacture"
+             class="form-control"
+             placeholder="Ex : FACT-2024-00456"
+             required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Bénéficiaire (Nom du patient)</label>
+      <input type="text"
+             [(ngModel)]="nouveauDossier.beneficiaire"
+             name="beneficiaire"
+             class="form-control"
+             placeholder="Nom et prénom">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Téléphone</label>
+      <input type="tel"
+             [(ngModel)]="nouveauDossier.telephone"
+             name="telephone"
+             class="form-control"
+             placeholder="Ex : 0661234567">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Référence interne</label>
+      <input type="text"
+             [(ngModel)]="nouveauDossier.referenceInterne"
+             name="referenceInterne"
+             class="form-control"
+             placeholder="Ex : REF-JUR-2024-001">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Observation juridique</label>
+      <textarea [(ngModel)]="nouveauDossier.observationJuridique"
+                name="observationJuridique"
+                class="form-control"
+                rows="4"
+                placeholder="Notes et observations du service juridique...">
+      </textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+      Enregistrer dans le système
+    </button>
+    <span class="ms-2 text-muted small">* Champs obligatoires</span>
+
+  </form>
+</div>
+
+<!--<p>saisie-dossier works!</p>
+<div class="container mt-4">
+  <h2>Saisie manuelle d'un dossier</h2>
+  <form (ngSubmit)="validerSaisie()">
+    <div class="mb-3">
+      <label>Nom du Patient</label>
+      <input type="text" [(ngModel)]="nouveauDossier.nomPatient" name="nom" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>CIN</label>
+      <input type="text" [(ngModel)]="nouveauDossier.cin" name="cin" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label>Montant de la créance</label>
+      <input type="number" [(ngModel)]="nouveauDossier.montant" name="montant" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-success">Enregistrer dans le système</button>
+  </form>
+</div>-->

@@ -1,0 +1,185 @@
+/* login.component.css */
+
+.page-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #d8e5f0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* ── Outer light-blue rounded card ── */
+.outer-card {
+  background: #e8f0f8;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(80, 120, 180, 0.15);
+}
+
+/* ── White inner card ── */
+.login-container {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  width: 520px;
+  box-shadow: 0 2px 10px rgba(80, 120, 180, 0.12);
+}
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(180deg, #4aaee8 0%, #1a7ecf 50%, #1060a8 100%);
+  padding: 12px 16px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 75px;
+}
+
+.sgfi-label {
+  background: #1a6ab5;
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.05em;
+  align-self: flex-start;
+}
+
+.chu-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.logo-img {
+  height: 50px;
+  width: 50px;
+  object-fit: contain;
+  background: #fff;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.chu-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.chu-name {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.chu-sub {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+/* ── Subtitle bar ── */
+.subtitle {
+  background: #1a6ab5;
+  padding: 9px 16px;
+  text-align: center;
+  color: #fff;
+  font-size: 12px;
+}
+
+.subtitle strong {
+  font-weight: 700;
+}
+
+/* ── Info notice ── */
+.instruction {
+  background: #f0f4f8;
+  border-bottom: 1px solid #d0dae4;
+  padding: 9px 16px;
+  font-size: 12px;
+  color: #444;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.instruction::before {
+  content: "ℹ";
+  font-size: 14px;
+  color: #2176c7;
+  flex-shrink: 0;
+}
+
+/* ── Form ── */
+.form-field {
+  padding: 24px 28px 20px;
+}
+
+.input-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+
+.input-row label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #222;
+  min-width: 105px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.input-row input {
+  flex: 1;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13px;
+  border: 1px solid #b0c4d8;
+  border-radius: 3px;
+  background: #fff;
+  color: #222;
+  outline: none;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.07);
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.input-row input:focus {
+  border-color: #1a7ecf;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.07), 0 0 0 2px rgba(26, 126, 207, 0.15);
+}
+
+/* ── Button row ── */
+.btn-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ── Se connecter button ── */
+::ng-deep button[mat-raised-button] {
+  background: linear-gradient(180deg, #3aaee8 0%, #1a7ecf 50%, #1060a8 100%) !important;
+  color: #fff !important;
+  border-radius: 5px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 9px 24px !important;
+  box-shadow: 0 2px 6px rgba(20, 80, 160, 0.25) !important;
+  width: auto !important;
+  height: auto !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* ── Error message ── */
+.errorMessage {
+  color: #c0392b;
+  font-size: 12px;
+  font-style: italic;
+}
