@@ -4,7 +4,7 @@
       <div class="header">
         <div class="sgfi-label">SGFI</div>
         <div class="chu-logo">
-          <img src="Logo_chu1.png" class="logo-img" />
+          <img src="Logo_chu.png" class="logo-img" />
           <div class="chu-text">
             <span class="chu-name">CHU HASSAN II</span>
             <span class="chu-sub">Centre Hospitalier Hassan II - Fès</span>
@@ -22,12 +22,12 @@
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <div class="input-row">
             <label for="username">Identifiant :</label>
-            <input matInput type="text" formControlName="username"  id="username"/>
+            <input matInput type="text" formControlName="username"  id="username" autocomplete="username" required/>
           </div>
 
           <div class="input-row">
             <label for="password">Mot de passe :</label>
-            <input matInput type="password" formControlName="password" id="password" />
+            <input matInput type="password" formControlName="password" id="password"  autocomplete="current-password" required/>
           </div>
 
           <div class="btn-row">

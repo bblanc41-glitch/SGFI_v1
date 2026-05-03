@@ -22,7 +22,8 @@ public class Utilisateur {
     /** ROLE_ADMIN | ROLE_JURIDIQUE | ROLE_CCR */
     private String role;
 
-	public Long getIdAgent() {
+	/*
+    public Long getIdAgent() {
 		return idAgent;
 	}
 
@@ -52,5 +53,5 @@ public class Utilisateur {
 
 	public void setRole(String role) {
 		this.role = role;
-	}
+	}*/
 }

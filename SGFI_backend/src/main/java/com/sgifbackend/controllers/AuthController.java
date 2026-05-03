@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")// Pour permetre la communication spring & angular   ou @CrossOrigin(origins = "*", allowedHeaders = "*")
+//@CrossOrigin(origins = "http://localhost:4200", allowedHeaders = "*")// Pour permetre la communication spring & angular   ou @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AuthController {
 
     @Autowired
@@ -24,7 +24,7 @@ public class AuthController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     	
     	// Recherche de l'utilisateur dans la BD
@@ -39,6 +39,7 @@ public class AuthController {
 
         return ResponseEntity
 				            .status(HttpStatus.UNAUTHORIZED)
-				            .body("Identifiants incorrects. Vérifiez le username et le mot de passe.");
+				            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+				            .body("{\"erreur\": \"Identifiants incorrects\"}");
     }
 }
