@@ -1,0 +1,178 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   APP.CSS — Styles globaux : navbar + layout racine SGFI
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── RESET / BASE ────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f9;
+}
+
+/* ── BARRE DE NAVIGATION GLOBALE ────────────────────────────────────────────── */
+
+.sgfi-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* ↑ z-index élevé pour rester au-dessus du contenu lors du scroll */
+  height: 60px;
+  background: #1a2236;
+  color: #e8edf5;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  gap: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
+
+/* Logo + Titre CHU */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.nav-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.nav-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.nav-title-main {
+  font-size: .95rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .08em;
+}
+
+.nav-title-sub {
+  font-size: .68rem;
+  color: #7a8aab;
+  white-space: nowrap;
+}
+
+/* Séparateur visuel après le brand */
+.nav-brand::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 32px;
+  background: #2a3550;
+  margin-left: .5rem;
+}
+
+/* Liens de navigation */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .45rem .9rem;
+  border-radius: 8px;
+  color: #9aa8c0;
+  text-decoration: none;
+  font-size: .85rem;
+  font-weight: 500;
+  transition: background .18s, color .18s;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: #243050;
+  color: #e8edf5;
+}
+
+.nav-link.nav-active {
+  /* Classe ajoutée par routerLinkActive="nav-active" sur la route active */
+  background: #1565C0;
+  color: #fff;
+  font-weight: 700;
+}
+
+.nav-link i { font-size: .95rem; }
+
+/* Zone droite : username + déconnexion */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.nav-username {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .85rem;
+  color: #cdd5e0;
+  white-space: nowrap;
+}
+
+.nav-username i { font-size: 1.1rem; color: #7a8aab; }
+
+.btn-deconnexion {
+  padding: .4rem .9rem;
+  background: transparent;
+  border: 1px solid #3a4a6a;
+  border-radius: 8px;
+  color: #9aa8c0;
+  font-size: .82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  transition: background .18s, color .18s, border-color .18s;
+  white-space: nowrap;
+}
+
+.btn-deconnexion:hover {
+  background: #c62828;
+  border-color: #c62828;
+  color: #fff;
+}
+
+/* ── CONTENU PRINCIPAL ──────────────────────────────────────────────────────── */
+
+main {
+  display: block;
+}
+
+main.with-navbar {
+  /* Quand la navbar est visible, le contenu commence juste en dessous */
+  min-height: calc(100vh - 60px);
+}
+
+/* ── RESPONSIVE NAVBAR ──────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  /* Sur mobile, la sidebar du dashboard prend le relais pour la navigation */
+}
+
+@media (max-width: 600px) {
+  .nav-title-sub  { display: none; }
+  .nav-username   { display: none; }
+}

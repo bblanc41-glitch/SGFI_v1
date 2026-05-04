@@ -1,5 +1,5 @@
 package com.sgifbackend.services;
-
+ 
 import com.sgifbackend.models.Dossier;
 import com.sgifbackend.models.DossierImport;
 import com.sgifbackend.repositories.DossierImportRepository;
@@ -10,15 +10,16 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+ 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+ 
 /**
  * Service d'importation du fichier Excel CCR (Comptabilité Client & Recouvrement).
  *
@@ -37,22 +38,154 @@ import java.util.Map;
  *   1. Crée un enregistrement dans dossiers_importes (données brutes)
  *   2. Crée automatiquement un Dossier avec statut IMPORTE_CCR
  */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
 public class ImportationService {
-/*
+ 
     private final DossierImportRepository importRepo;
     private final DossierService          dossierService;
-*/
-    /* Importe un fichier Excel CCR.
-    
-      @param fichier fichier .xlsx transmis par la CCR
-      @param auteur  nom de l'agent qui effectue l'import (depuis le JWT)
-      @return Map contenant : importes, doublons, erreurs, details
+ 
+    /**
+     * Importe un fichier Excel CCR et crée les dossiers correspondants.
+     *
+     * @param fichier fichier .xlsx transmis par la CCR
+     * @param auteur  username de l'agent (extrait du JWT par le contrôleur)
+     * @return Map { importes, doublons, erreurs, details }
      */
-/*    public Map<String, Object> importerFichierCcr(MultipartFile fichier, String auteur) throws IOException {
+    public Map<String, Object> importerFichierCcr(MultipartFile fichier,
+                                                   String auteur) throws IOException {
+        int importes = 0, doublons = 0, erreurs = 0;
+        List<String> details = new ArrayList<>();
+ 
+        try (Workbook wb = new XSSFWorkbook(fichier.getInputStream())) {
+            Sheet sheet = wb.getSheetAt(0);
+ 
+            // Ligne 0 = en-têtes → on commence à 1
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null || estVide(row)) continue;
+ 
+                try {
+                    String ip      = lireTexte(row, 0);
+                    String facture = lireTexte(row, 5);
+ 
+                    if (ip.isBlank() || facture.isBlank()) {
+                        erreurs++;
+                        details.add("Ligne " + (i+1) + " : IP ou numéro de facture manquant");
+                        continue;
+                    }
+ 
+                    if (importRepo.existsByIpAndNumeroFacture(ip, facture)) {
+                        doublons++;
+                        details.add("Ligne " + (i+1) + " : doublon ignoré (IP=" + ip + ")");
+                        continue;
+                    }
+ 
+                    // Enregistrement données brutes CCR
+                    DossierImport di = new DossierImport();
+                    di.setIp(ip);
+                    di.setBeneficiaire(lireTexte(row, 1));
+                    di.setCin(lireTexte(row, 2));
+                    di.setDateD(lireDate(row, 3));
+                    di.setDateF(lireDate(row, 4));
+                    di.setNumeroFacture(facture);
+                    di.setMontant(lireDecimal(row, 6));
+                    di.setPaiement(lireDecimal(row, 7));
+                    di.setRAP(lireDecimal(row, 8));
+                    importRepo.save(di);
+ 
+                    // Création automatique du dossier juridique (statut IMPORTE_CCR)
+                    Dossier d = new Dossier();
+                    d.setIp(ip);
+                    d.setNumeroFacture(facture);
+                    d.setBeneficiaire(di.getBeneficiaire());
+                    d.setCin(di.getCin());
+                    dossierService.creerDepuisImport(d, auteur);
+ 
+                    importes++;
+ 
+                } catch (Exception e) {
+                    erreurs++;
+                    details.add("Ligne " + (i+1) + " : erreur — " + e.getMessage());
+                    log.warn("Erreur import ligne {} : {}", i+1, e.getMessage());
+                }
+            }
+        }
+ 
+        log.info("Import CCR : {} importés, {} doublons, {} erreurs", importes, doublons, erreurs);
+ 
+        Map<String, Object> rapport = new HashMap<>();
+        rapport.put("importes", importes);
+        rapport.put("doublons", doublons);
+        rapport.put("erreurs",  erreurs);
+        rapport.put("details",  details);
+        return rapport;
+    }
+ 
+    // ── Helpers Apache POI ──────────────────────────────────────────────────
+ 
+    private String lireTexte(Row row, int col) {
+        Cell c = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (c == null) return "";
+        return switch (c.getCellType()) {
+            case STRING  -> c.getStringCellValue().trim();
+            case NUMERIC -> {
+                if (DateUtil.isCellDateFormatted(c))
+                    yield c.getLocalDateTimeCellValue().toLocalDate().toString();
+                double v = c.getNumericCellValue();
+                yield (v == Math.floor(v)) ? String.valueOf((long) v) : String.valueOf(v);
+            }
+            case BOOLEAN -> String.valueOf(c.getBooleanCellValue());
+            default      -> c.toString().trim();
+        };
+    }
+ 
+    private LocalDate lireDate(Row row, int col) {
+        Cell c = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (c == null) return null;
+        try {
+            if (c.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(c)) {
+                return c.getDateCellValue().toInstant()
+                    .atZone(ZoneId.systemDefault()).toLocalDate();
+            }
+            return LocalDate.parse(c.getStringCellValue().trim());
+        } catch (Exception e) { return null; }
+    }
+ 
+    private BigDecimal lireDecimal(Row row, int col) {
+        Cell c = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (c == null) return BigDecimal.ZERO;
+        try { return BigDecimal.valueOf(c.getNumericCellValue()); }
+        catch (Exception e) { return BigDecimal.ZERO; }
+    }
+ 
+    private boolean estVide(Row row) {
+        for (int i = row.getFirstCellNum(); i < row.getLastCellNum(); i++) {
+            Cell c = row.getCell(i);
+            if (c != null && c.getCellType() != CellType.BLANK && !c.toString().isBlank())
+                return false;
+        }
+        return true;
+    }	
+	
+	
+	
+	
+	
+/* Ancienne Version
+    //private final DossierImportRepository importRepo;
+    //private final DossierService          dossierService;
+
+    // Importe un fichier Excel CCR.
+    
+      //@param fichier fichier .xlsx transmis par la CCR
+     // @param auteur  nom de l'agent qui effectue l'import (depuis le JWT)
+     // @return Map contenant : importes, doublons, erreurs, details
+    
+   public Map<String, Object> importerFichierCcr(MultipartFile fichier, String auteur) throws IOException {
 
         int importes = 0, doublons = 0, erreurs = 0;
         List<String> details = new ArrayList<>();

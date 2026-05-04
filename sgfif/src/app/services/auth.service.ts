@@ -1,14 +1,8 @@
-// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-// CORRECTION : import { Token } from '@angular/compiler' supprimé
-// Token est un type interne du compilateur Angular, il n'a rien à faire ici.
-// Cet import erroné peut provoquer des conflits de types inattendus.
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
 
   private loginUrl = 'http://localhost:8080/api/auth/login';
@@ -29,6 +23,30 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!this.getToken();
+  }
+
+  // ── DÉCODAGE JWT ──────────────────────────────────────────────────────────
+  // AJOUT NÉCESSAIRE : dashboard.ts et app.ts appellent cette méthode
+  // pour lire le username et le rôle depuis le token sans appel backend.
+  // La vérification de signature reste côté serveur (JwtAuthFilter.java).
+  getDecodedToken(): { sub: string; role: string; iat: number; exp: number } | null {
+    const token = this.getToken();
+    if (!token) return null;
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) return null;
+      // Base64URL → UTF-8
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const json = decodeURIComponent(
+        atob(base64).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join('')
+      );
+      return JSON.parse(json);
+    } catch {
+      this.logout(); // token malformé → nettoyage
+      return null;
+    }
   }
 }
 

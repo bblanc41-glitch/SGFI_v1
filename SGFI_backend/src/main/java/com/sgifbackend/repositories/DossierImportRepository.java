@@ -11,5 +11,7 @@ import java.util.Optional;
 public interface DossierImportRepository extends JpaRepository<DossierImport, Long> {
 
     Optional<DossierImport> findByIpAndNumeroFacture(String ip, String numeroFacture);
+
+    // Vérifie doublon avant import CCR
     boolean existsByIpAndNumeroFacture(String ip, String numeroFacture);
 }

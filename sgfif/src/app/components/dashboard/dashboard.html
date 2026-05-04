@@ -1,57 +1,220 @@
-<div class="dashboard-page">
+<!-- (sidebar + dossiers récents + layout complet) + (cartes stats dynamiques via getter + spinner) -->
 
-  <!-- En-tête -->
-  <div class="page-header">
-    <div>
-      <h2 class="page-title">Tableau de bord</h2>
-      <p class="page-subtitle">CHU Hassan II — Service Juridique · Vue d'ensemble des dossiers</p>
-    </div>
-    <span class="badge bg-primary px-3 py-2 fs-6">SGFI</span>
-  </div>
+<div class="dashboard-wrapper">
 
-  <!-- Chargement -->
-  <div *ngIf="chargement" class="text-center py-5">
-    <div class="spinner-border text-primary" role="status"></div>
-    <p class="mt-2 text-muted">Chargement des statistiques…</p>
-  </div>
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
 
-  <!-- Cartes statistiques -->
-  <div *ngIf="!chargement" class="stats-grid">
-    <div *ngFor="let c of cartes" class="stat-card stat-{{ c.couleur }}">
-      <div class="stat-icon">
-        <i class="bi {{ c.icone }}"></i>
-      </div>
-      <div class="stat-body">
-        <div class="stat-value">{{ c.valeur }}</div>
-        <div class="stat-label">{{ c.label }}</div>
+    <!-- Identité utilisateur -->
+    <div class="sidebar-user">
+      <div class="avatar-circle">{{ userInitials }}</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-username">{{ username }}</div>
+        <div class="sidebar-role">{{ userRole }}</div> <!-- rôle lu depuis le token JWT (ADMIN, JURIDIQUE, CCR) -->
       </div>
     </div>
-  </div>
 
-  <!-- Actions rapides -->
-  <div class="actions-section">
-    <h5 class="section-title">Actions rapides</h5>
-    <div class="actions-grid">
+    <hr class="sidebar-divider" />
 
-      <a routerLink="/liste-dossiers" class="action-card">
-        <i class="bi bi-list-ul action-icon text-primary"></i>
-        <div class="action-label">Liste des dossiers</div>
-        <div class="action-sub">Consulter et gérer tous les dossiers</div>
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <a class="sidebar-item"
+         [class.active]="activeMenu === 'dashboard'"
+         (click)="setMenu('dashboard')"
+         routerLink="/dashboard">
+        <i class="bi bi-grid-1x2-fill s-icon"></i>
+        Tableau de bord
       </a>
 
-      <a routerLink="/saisie-manuelle" class="action-card">
-        <i class="bi bi-pencil-square action-icon text-success"></i>
-        <div class="action-label">Saisie manuelle</div>
-        <div class="action-sub">Créer un nouveau dossier manuellement</div>
+      <a class="sidebar-item"
+         [class.active]="activeMenu === 'dossiers'"
+         (click)="setMenu('dossiers')"
+         routerLink="/liste-dossiers">
+        <i class="bi bi-folder2-open s-icon"></i>
+        Dossiers
       </a>
 
-      <a routerLink="/importation" class="action-card">
-        <i class="bi bi-upload action-icon text-info"></i>
-        <div class="action-label">Importation CCR</div>
-        <div class="action-sub">Importer le fichier Excel de la comptabilité</div>
+      <a class="sidebar-item"
+         [class.active]="activeMenu === 'saisie'"
+         (click)="setMenu('saisie')"
+         routerLink="/saisie-manuelle">
+        <i class="bi bi-pencil-square s-icon"></i>
+        Saisie manuelle
       </a>
 
+      <a class="sidebar-item"
+         [class.active]="activeMenu === 'importation'"
+         (click)="setMenu('importation')"
+         routerLink="/importation">
+        <i class="bi bi-upload s-icon"></i>
+        Importation CCR
+      </a>
+
+      <a class="sidebar-item"
+         [class.active]="activeMenu === 'notifications'"
+         (click)="setMenu('notifications')"
+         routerLink="/notifications">
+        <i class="bi bi-bell-fill s-icon"></i>
+        Notifications
+        <!-- Badge dynamique — s'affiche uniquement s'il y a des notifs non lues -->
+        <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span> <!-- notifCount = notifications.filter(n => !n.lue).length -->
+      </a>
+
+    </nav>
+
+    <hr class="sidebar-divider" />
+
+    <!-- Déconnexion en bas de sidebar -->
+    <button class="btn-logout" (click)="logout()">
+      <i class="bi bi-box-arrow-left"></i>
+      Déconnexion
+    </button>
+
+  </aside>
+
+  <!------------------ CONTENU PRINCIPAL  -->
+  <main class="dashboard-content">
+
+    <!-- En-tete de page -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Tableau de bord</h2>
+        <p class="page-subtitle">
+          CHU Hassan II — Service Juridique · Vue d'ensemble des dossiers
+        </p>
+      </div>
+      <span class="badge-sgfi">SGFI</span>
     </div>
-  </div>
 
+    <!--SPINNER DE CHARGEMENT
+         Affiché tant que les stats n'ont pas été reçues du backend
+         chargement = true → spinner visible
+         chargement = false → contenu visible -->
+    <div *ngIf="chargement" class="loading-state">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement…</span>
+      </div>
+      <p class="mt-3 text-muted">Chargement des statistiques…</p>
+    </div>
+
+    <!-- sms d'erreur si le backend est inaccessible -->
+    <div *ngIf="erreur && !chargement" class="alert alert-warning">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      Impossible de charger les statistiques. Vérifiez la connexion au serveur.
+    </div>
+
+    <!------ CONTENU PRINCIPAL (visible après chargement) ────────────────────── -->
+    <ng-container *ngIf="!chargement">
+
+      <!-- CARTES STATISTIQUES dynamique obtenu depuis le getter cartes[] les valeurs viennent du backend via dossierService.getStats() -->
+      <div class="stats-grid">
+        <a *ngFor="let c of cartes" class="stat-card stat-{{ c.couleur }}" [routerLink]="c.lien" [class.no-link]="!c.lien">
+          <div class="stat-icon">
+            <i class="bi {{ c.icone }}"></i>
+          </div>
+          <div class="stat-body">
+            <div class="stat-value">
+              <ng-container *ngIf="c.montant; else nombreSimple"> <!-- Montant : formatage monétaire — autres : nombre entier -->
+                {{ c.valeur | number:'1.0-0' }} MAD
+              </ng-container>
+              <ng-template #nombreSimple>
+                {{ c.valeur }}
+              </ng-template>
+            </div>
+            <div class="stat-label">{{ c.label }}</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- ACTIONS RAPIDES -->
+      <div class="actions-section">
+        <h5 class="section-title">Actions rapides</h5>
+        <div class="actions-grid">
+
+          <a routerLink="/liste-dossiers" class="action-card">
+            <i class="bi bi-list-ul action-icon text-primary"></i>
+            <div class="action-label">Liste des dossiers</div>
+            <div class="action-sub">Consulter et gérer tous les dossiers</div>
+          </a>
+
+          <a routerLink="/saisie-manuelle" class="action-card">
+            <i class="bi bi-pencil-square action-icon text-success"></i>
+            <div class="action-label">Saisie manuelle</div>
+            <div class="action-sub">Créer un nouveau dossier</div>
+          </a>
+
+          <a routerLink="/importation" class="action-card">
+            <i class="bi bi-upload action-icon text-info"></i>
+            <div class="action-label">Importation CCR</div>
+            <div class="action-sub">Importer le fichier Excel de la comptabilité</div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- DOSSIERS RÉCENTS
+           Les 5 derniers dossiers modifiés — chargés depuis getRecent(5)
+      -->
+      <div class="table-section">
+        <div class="table-header">
+          <h5 class="section-title mb-0">Dossiers récents</h5>
+          <a routerLink="/liste-dossiers" class="voir-tous">
+            Voir tous les dossiers <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Spinner dossiers récents si nécessaire -->
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Référence interne</th>
+                <th>IP Patient</th>
+                <th>Bénéficiaire</th>
+                <th>N° Facture</th>
+                <th>Montant (MAD)</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Ligne pour chaque dossier récent -->
+              <tr *ngFor="let d of recentDossiers">
+                <td class="ref-col">{{ d.referenceInterne || '—' }}</td>
+                <td>{{ d.ip }}</td>
+                <td>{{ d.beneficiaire || '—' }}</td>
+                <td>{{ d.numeroFacture }}</td>
+                <td class="amount-col">
+                  <!-- montant peut être null si dossier sans infosOrigine -->
+                  {{ d.montant != null ? (d.montant | number:'1.0-2') : '—' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="getStatutClass(d.statut || '')">
+                    {{ d.statut || 'Importé CCR' }}
+                  </span>
+                </td>
+                <td>
+                  <a class="btn-voir"
+                     [routerLink]="['/liste-dossiers']">
+                    <i class="bi bi-eye"></i> Voir
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Ligne vide si aucun dossier -->
+              <tr *ngIf="recentDossiers.length === 0">
+                <td colspan="7" class="empty-row">
+                  <i class="bi bi-inbox me-2"></i>
+                  Aucun dossier récent
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container><!-- fin ng-container !chargement -->
+
+  </main>
 </div>
