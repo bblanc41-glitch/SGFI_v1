@@ -1,4 +1,119 @@
-<!--<p>importation works!</p>
+<!-- IMPORTATION CCR — Chargement du fichier Excel de la Comptabilité Client & Recouvrement -->
+
+<div class="import-page">
+  <div class="import-card">
+
+    <!-- En-tête -->
+    <div class="import-header">
+      <div>
+        <h2 class="import-title">
+          <i class="bi bi-upload me-2"></i>Importation massive CCR
+        </h2>
+        <p class="import-subtitle">
+          Importez le fichier Excel transmis par la Comptabilité Client et Recouvrement
+        </p>
+      </div>
+      <a routerLink="/dashboard" class="btn-retour">
+        <i class="bi bi-arrow-left me-1"></i> Tableau de bord
+      </a>
+    </div>
+
+    <!-- ── Zone de sélection du fichier ─────────────────────────────── -->
+    <div class="drop-zone" *ngIf="!rapport">
+
+      <i class="bi bi-file-earmark-excel drop-icon"></i>
+      <p class="drop-label">Sélectionnez votre fichier Excel CCR</p>
+      <p class="drop-hint">Format accepté : .xlsx — Structure attendue : IP, Bénéficiaire, CIN, Dates, N° Facture, Montant, Paiement, RAP</p>
+
+      <label class="btn-choisir" for="fichierCcr">
+        <i class="bi bi-folder2-open me-1"></i>
+        Choisir un fichier
+        <input type="file"
+               id="fichierCcr"
+               accept=".xlsx"
+               (change)="onFichierSelectionne($event)"
+               style="display:none" />
+      </label>
+
+      <!-- Fichier sélectionné -->
+      <div class="fichier-selectionne" *ngIf="fichierSelectionne">
+        <i class="bi bi-file-check-fill text-success me-2"></i>
+        <span>{{ fichierSelectionne.name }}</span>
+        <span class="fichier-taille">({{ (fichierSelectionne.size / 1024 / 1024).toFixed(2) }} Mo)</span>
+      </div>
+
+    </div><!-- /drop-zone -->
+
+    <!-- ── Message d'erreur ─────────────────────────────────────────── -->
+    <div class="alert alert-danger" *ngIf="erreurServeur">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ erreurServeur }}
+    </div>
+
+    <!-- ── Bouton de lancement ────────────────────────────────────────── -->
+    <div class="import-actions" *ngIf="!rapport">
+      <button class="btn-importer"
+              (click)="lancerImportation()"
+              [disabled]="!fichierSelectionne || chargement">
+        <span *ngIf="chargement" class="spinner-border spinner-border-sm me-2"></span>
+        <i class="bi bi-cloud-upload me-1" *ngIf="!chargement"></i>
+        {{ chargement ? 'Importation en cours…' : 'Lancer l\'importation' }}
+      </button>
+    </div>
+
+    <!-- ── Rapport d'importation ──────────────────────────────────────── -->
+    <div class="rapport" *ngIf="rapport">
+
+      <h4 class="rapport-title">
+        <i class="bi bi-clipboard-check me-2"></i>Rapport d'importation
+      </h4>
+
+      <!-- Compteurs -->
+      <div class="rapport-grid">
+        <div class="rapport-card vert">
+          <div class="rapport-chiffre">{{ rapport.importes }}</div>
+          <div class="rapport-label">Dossiers importés</div>
+        </div>
+        <div class="rapport-card orange">
+          <div class="rapport-chiffre">{{ rapport.doublons }}</div>
+          <div class="rapport-label">Doublons ignorés</div>
+        </div>
+        <div class="rapport-card rouge">
+          <div class="rapport-chiffre">{{ rapport.erreurs }}</div>
+          <div class="rapport-label">Erreurs</div>
+        </div>
+      </div>
+
+      <!-- Message de succès -->
+      <div class="alert alert-success" *ngIf="importationReussie">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        {{ rapport.importes }} dossier(s) ont été intégrés avec le statut <strong>Importé CCR</strong>.
+      </div>
+
+      <!-- Détails des erreurs et doublons -->
+      <div class="rapport-details" *ngIf="rapport.details && rapport.details.length > 0">
+        <h6 class="rapport-details-title">Détail des lignes ignorées :</h6>
+        <ul class="rapport-details-list">
+          <li *ngFor="let detail of rapport.details">{{ detail }}</li>
+        </ul>
+      </div>
+
+      <!-- Actions après import -->
+      <div class="rapport-actions">
+        <button class="btn-nouveau" (click)="reinitialiser()">
+          <i class="bi bi-upload me-1"></i> Nouvelle importation
+        </button>
+        <a routerLink="/liste-dossiers" class="btn-voir-dossiers">
+          <i class="bi bi-folder2-open me-1"></i> Voir les dossiers
+        </a>
+      </div>
+
+    </div><!-- /rapport -->
+
+  </div><!-- /import-card -->
+</div>
+
+<!--Version 1
 <div class="card p-4 shadow-sm">
   <h3>Importation massive (Fichier CCR)</h3>
   <p>Sélectionnez le fichier Excel transmis par la Comptabilité Client et Recouvrement[cite: 13].</p>

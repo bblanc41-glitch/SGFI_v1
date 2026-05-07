@@ -1,14 +1,186 @@
+<!-- SAISIE MANUELLE — Création d'un dossier juridique
+     Champs saisis : ip, numeroFacture, beneficiaire, cin, telephone, observationJuridique
+     Champs auto (backend) : statut, referenceInterne, dateCreation -->
+
+<div class="saisie-page">
+  <div class="saisie-card">
+
+    <!-- En-tête -->
+    <div class="saisie-header">
+      <div>
+        <h2 class="saisie-title">
+          <i class="bi bi-pencil-square me-2"></i>
+          Saisie manuelle d'un dossier
+        </h2>
+        <p class="saisie-subtitle">Service Juridique — CHU Hassan II · Fès</p>
+      </div>
+      <a routerLink="/liste-dossiers" class="btn-retour">
+        <i class="bi bi-arrow-left me-1"></i> Liste des dossiers
+      </a>
+    </div>
+
+    <!-- Message de succès -->
+    <div class="alert alert-success" *ngIf="succes">
+      <i class="bi bi-check-circle-fill me-2"></i>
+      Dossier enregistré avec succès ! Redirection en cours…
+    </div>
+
+    <!-- Message d'erreur -->
+    <div class="alert alert-danger" *ngIf="erreurMessage">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ erreurMessage }}
+    </div>
+
+    <!-- Formulaire -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!succes" novalidate>
+
+      <!-- ── Section : Identification du patient ────────────────────── -->
+      <div class="form-section">
+        <h5 class="form-section-title">
+          <i class="bi bi-person-vcard me-2"></i>Identification
+        </h5>
+
+        <div class="form-row-2">
+
+          <!-- IP Patient — obligatoire -->
+          <div class="form-group">
+            <label class="form-label required" for="ip">
+              Identifiant Patient (IP)
+            </label>
+            <input type="text"
+                   id="ip"
+                   formControlName="ip"
+                   class="form-control"
+                   [class.is-invalid]="ip?.invalid && ip?.touched"
+                   placeholder="Ex : IP-2024-00123"
+                   autocomplete="off" />
+            <div class="invalid-feedback" *ngIf="ip?.errors?.['required'] && ip?.touched">
+              L'IP Patient est obligatoire.
+            </div>
+            <div class="invalid-feedback" *ngIf="ip?.errors?.['maxlength'] && ip?.touched">
+              L'IP ne doit pas dépasser 30 caractères.
+            </div>
+            <div class="form-hint">Clé d'identification unique du patient</div>
+          </div>
+
+          <!-- Numéro de facture — obligatoire -->
+          <div class="form-group">
+            <label class="form-label required" for="numeroFacture">
+              Numéro de Facture
+            </label>
+            <input type="text"
+                   id="numeroFacture"
+                   formControlName="numeroFacture"
+                   class="form-control"
+                   [class.is-invalid]="numeroFacture?.invalid && numeroFacture?.touched"
+                   placeholder="Ex : FACT-2024-00456"
+                   autocomplete="off" />
+            <div class="invalid-feedback" *ngIf="numeroFacture?.errors?.['required'] && numeroFacture?.touched">
+              Le numéro de facture est obligatoire.
+            </div>
+            <div class="form-hint">Identifiant de la facture impayée</div>
+          </div>
+
+        </div><!-- /form-row-2 -->
+
+        <div class="form-row-2">
+
+          <!-- Bénéficiaire -->
+          <div class="form-group">
+            <label class="form-label" for="beneficiaire">Bénéficiaire</label>
+            <input type="text"
+                   id="beneficiaire"
+                   formControlName="beneficiaire"
+                   class="form-control"
+                   placeholder="Nom et prénom du patient" />
+          </div>
+
+          <!-- CIN -->
+          <div class="form-group">
+            <label class="form-label" for="cin">CIN</label>
+            <input type="text"
+                   id="cin"
+                   formControlName="cin"
+                   class="form-control"
+                   placeholder="Ex : AB123456"
+                   autocomplete="off" />
+          </div>
+
+        </div><!-- /form-row-2 -->
+
+        <!-- Téléphone -->
+        <div class="form-group" style="max-width: 300px">
+          <label class="form-label" for="telephone">Téléphone</label>
+          <input type="tel"
+                 id="telephone"
+                 formControlName="telephone"
+                 class="form-control"
+                 placeholder="Ex : 0661234567"
+                 autocomplete="tel" />
+        </div>
+
+      </div><!-- /form-section -->
+
+      <!-- ── Section : Observation juridique ───────────────────────── -->
+      <div class="form-section">
+        <h5 class="form-section-title">
+          <i class="bi bi-journal-text me-2"></i>Observation juridique
+        </h5>
+
+        <div class="form-group">
+          <label class="form-label" for="observationJuridique">
+            Notes et observations
+          </label>
+          <textarea id="observationJuridique"
+                    formControlName="observationJuridique"
+                    class="form-control"
+                    rows="4"
+                    placeholder="Informations complémentaires, contexte juridique…">
+          </textarea>
+          <div class="form-hint">
+            Ces informations seront visibles uniquement par le Service Juridique.
+          </div>
+        </div>
+
+      </div><!-- /form-section -->
+
+      <!-- ── Note informative (champs auto) ────────────────────────── -->
+      <div class="info-auto">
+        <i class="bi bi-info-circle me-2"></i>
+        Le système générera automatiquement :
+        <strong>une référence interne</strong> (REF-JUR-YYYY-NNNN) et
+        <strong>le statut initial</strong> (En attente de prise en charge).
+      </div>
+
+      <!-- ── Boutons ────────────────────────────────────────────────── -->
+      <div class="form-actions">
+        <button type="button"
+                class="btn-annuler"
+                (click)="onReset()"
+                [disabled]="chargement">
+          <i class="bi bi-x-circle me-1"></i> Réinitialiser
+        </button>
+
+        <button type="submit"
+                class="btn-enregistrer"
+                [disabled]="chargement">
+          <span *ngIf="chargement" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="bi bi-floppy me-1" *ngIf="!chargement"></i>
+          {{ chargement ? 'Enregistrement…' : 'Enregistrer dans le système' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div><!-- /saisie-card -->
+</div>
+
+<!--Version 2
 <div class="container mt-4">
   <h2>Saisie manuelle d'un dossier juridique</h2>
   <p class="text-muted">Service Juridique — CHU Hassan II</p>
 
   <form (ngSubmit)="validerSaisie()">
-
-    <!--
-      La table "dossiers" contient : ip, numeroFacture, beneficiaire,
-      telephone, statut, referenceInterne, observationJuridique. D'autres champs seront ajouté a la demande du Service Juridique
-  
-    -->
 
     <div class="mb-3">
       <label class="form-label">Identifiant Patient (IP) *</label>
@@ -73,9 +245,9 @@
     <span class="ms-2 text-muted small">* Champs obligatoires</span>
 
   </form>
-</div>
+</div>      -->
 
-<!--<p>saisie-dossier works!</p>
+<!--  VERSION 1 <p>saisie-dossier works!</p>
 <div class="container mt-4">
   <h2>Saisie manuelle d'un dossier</h2>
   <form (ngSubmit)="validerSaisie()">
