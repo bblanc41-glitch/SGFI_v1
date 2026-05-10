@@ -38,12 +38,19 @@ public class DossierService {
     private final HistoriqueRepository historiqueRepo;
  
     // ── LECTURE ─────────────────────────────────────────────────────────────
- 
     @Transactional(readOnly = true)
+    // → 1 seule requête SQL avec LEFT JOIN FETCH (plus de problème N+1)
     public List<Dossier> findAll() {
-        return dossierRepo.findAll();
+        return dossierRepo.findAllAvecInfos();
     }
  
+    
+   /* @Transactional(readOnly = true)
+    public List<Dossier> findAll() {
+        return dossierRepo.findAll();
+    }*/
+    
+    // ── DÉTAIL ────
     @Transactional(readOnly = true)
     public Dossier findById(Long id) {
         return dossierRepo.findById(id)
@@ -51,22 +58,35 @@ public class DossierService {
                 HttpStatus.NOT_FOUND, "Dossier #" + id + " introuvable"));
     }
  
+    // ── RECHERCHE 
     @Transactional(readOnly = true)
     public List<Dossier> rechercher(String terme) {
         return dossierRepo.rechercher(terme);
     }
  
+    // ── FILTRE PAR STATUT
     @Transactional(readOnly = true)
     public List<Dossier> findByStatut(Statut statut) {
         return dossierRepo.findByStatutOrderByDateMiseAJourDesc(statut);
     }
  
+ // ── DOSSIERS RÉCENTS (dashboard) 
+    /*
     @Transactional(readOnly = true)
     public List<Dossier> getRecent() {
         // 5 derniers dossiers modifiés — pour le tableau du dashboard Angular
         return dossierRepo.findTop5ByOrderByDateMiseAJourDesc();
+    }*/
+    
+    @Transactional(readOnly = true)
+    public List<Dossier> getRecent() {
+        List<Dossier> tous = dossierRepo.findRecentAvecInfos();
+        return tous;
+        // affichage de 5 dossiers seulement return tous.size() > 5 ? tous.subList(0, 5) : tous;
     }
  
+    
+    // ── HISTORIQUE 
     @Transactional(readOnly = true)
     public List<HistoriqueDossier> getHistorique(Long idDossier) {
         return historiqueRepo.findByDossierIdDossierOrderByDateActionDesc(idDossier);
@@ -94,6 +114,12 @@ public class DossierService {
         return stats;
     }
  
+    
+    private double calculerMontantImpaye() {
+        Double total = dossierRepo.sommeRestesAPayer();
+        return (total != null) ? total : 0.0;
+    }
+    /*Methode lente
     private double calculerMontantImpaye() {
         // Somme des RAP de tous les dossiers actifs (non clôturés)
         return dossierRepo.findAll().stream()
@@ -101,7 +127,7 @@ public class DossierService {
             .filter(d -> d.getInfosOrigine() != null && d.getInfosOrigine().getRAP() != null)
             .mapToDouble(d -> d.getInfosOrigine().getRAP().doubleValue())
             .sum();
-    }
+    }*/
  
     // ── CRÉATION — saisie manuelle ───────────────────────────────────────────
  
@@ -166,8 +192,7 @@ public class DossierService {
     }
  
     private void validerMotif(Statut s, String motif) {
-        if ((s == Statut.CLOTURE || s == Statut.INCOMPLET)
-                && (motif == null || motif.isBlank())) {
+        if ((s == Statut.CLOTURE || s == Statut.INCOMPLET)&& (motif == null || motif.isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Motif obligatoire pour le statut : " + s.getLibelle());
         }

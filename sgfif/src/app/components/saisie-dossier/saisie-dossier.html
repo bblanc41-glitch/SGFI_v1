@@ -19,11 +19,52 @@
       </a>
     </div>
 
-    <!-- Message de succès -->
+
+    <div *ngIf="succes && dossierEnregistre" class="recap-section text-center py-4">
+      
+      <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+      <h3 class="mt-3 text-success">Dossier créé avec succès</h3>
+      <p class="text-muted">Référence générée : <strong class="fs-5">{{ dossierEnregistre.referenceInterne }}</strong></p>
+
+      <div class="card bg-light mt-4 mb-4 mx-auto text-start" style="max-width: 500px; border-radius: 12px;">
+        <div class="card-body">
+          <h5 class="card-title border-bottom pb-2 mb-3"><i class="bi bi-info-square me-2"></i>Détails du dossier</h5>
+          <div class="row mb-2">
+            <div class="col-5 text-muted">IP Patient :  <strong>{{ dossierEnregistre.ip }}</strong></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-5 text-muted">N° Facture :  <strong>{{ dossierEnregistre.numeroFacture }}</strong></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-5 text-muted">Bénéficiaire :  <strong>{{ dossierEnregistre.beneficiaire || 'Non renseigné' }}</strong></div>
+          </div>
+          <div class="row">
+            <div class="col-5 text-muted">Statut :  <strong>En attente de prise en charge</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+        
+        <button type="button" class="btn btn-outline-primary" (click)="recommencerSaisie()">
+          <i class="bi bi-plus-circle me-1"></i> Nouveau dossier
+        </button>
+
+        <button type="button" class="btn btn-outline-warning" (click)="modifierDossier()">
+          <i class="bi bi-pencil-square me-1"></i> Modifier le dossier
+        </button>
+
+        <a routerLink="/liste-dossiers" class="btn btn-primary">
+          <i class="bi bi-list-ul me-1"></i> Liste des dossiers
+        </a>
+      </div>
+
+    </div>
+    <!-- Message de succès  acienne version
     <div class="alert alert-success" *ngIf="succes">
       <i class="bi bi-check-circle-fill me-2"></i>
       Dossier enregistré avec succès ! Redirection en cours…
-    </div>
+    </div>-->
 
     <!-- Message d'erreur -->
     <div class="alert alert-danger" *ngIf="erreurMessage">
@@ -47,13 +88,8 @@
             <label class="form-label required" for="ip">
               Identifiant Patient (IP)
             </label>
-            <input type="text"
-                   id="ip"
-                   formControlName="ip"
-                   class="form-control"
-                   [class.is-invalid]="ip?.invalid && ip?.touched"
-                   placeholder="Ex : IP-2024-00123"
-                   autocomplete="off" />
+            <input type="text" id="ip" formControlName="ip" class="form-control"
+                   [class.is-invalid]="ip?.invalid && ip?.touched" placeholder="Ex : IP-2024-00123" autocomplete="off" />
             <div class="invalid-feedback" *ngIf="ip?.errors?.['required'] && ip?.touched">
               L'IP Patient est obligatoire.
             </div>
@@ -68,13 +104,9 @@
             <label class="form-label required" for="numeroFacture">
               Numéro de Facture
             </label>
-            <input type="text"
-                   id="numeroFacture"
-                   formControlName="numeroFacture"
-                   class="form-control"
+            <input type="text" id="numeroFacture" formControlName="numeroFacture" class="form-control"
                    [class.is-invalid]="numeroFacture?.invalid && numeroFacture?.touched"
-                   placeholder="Ex : FACT-2024-00456"
-                   autocomplete="off" />
+                   placeholder="Ex : FACT-2024-00456" autocomplete="off" />
             <div class="invalid-feedback" *ngIf="numeroFacture?.errors?.['required'] && numeroFacture?.touched">
               Le numéro de facture est obligatoire.
             </div>
@@ -88,55 +120,123 @@
           <!-- Bénéficiaire -->
           <div class="form-group">
             <label class="form-label" for="beneficiaire">Bénéficiaire</label>
-            <input type="text"
-                   id="beneficiaire"
-                   formControlName="beneficiaire"
-                   class="form-control"
-                   placeholder="Nom et prénom du patient" />
+            <input type="text" id="beneficiaire"
+                   formControlName="beneficiaire" class="form-control"  placeholder="Nom et prénom du patient" />
           </div>
 
           <!-- CIN -->
           <div class="form-group">
             <label class="form-label" for="cin">CIN</label>
-            <input type="text"
-                   id="cin"
-                   formControlName="cin"
-                   class="form-control"
-                   placeholder="Ex : AB123456"
-                   autocomplete="off" />
+            <input type="text" id="cin" formControlName="cin"
+                   class="form-control" placeholder="Ex : AB123456" autocomplete="off" />
           </div>
 
+           <mat-form-field appearance="outline">
+            <mat-label>Pôle hospitalier</mat-label>
+            <mat-select formControlName="pole">
+              <mat-option *ngFor="let p of poles" [value]="p">{{ p }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="isInvalid('pole')">Champ obligatoire</mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Date début soins (DD)</mat-label>
+            <input matInput type="date" formControlName="dateDebut" />
+            <mat-error *ngIf="isInvalid('dateDebut')">Champ obligatoire</mat-error>
+          </mat-form-field>
+
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date fin soins (DF)</mat-label>
+            <input matInput type="date" formControlName="dateFin" />
+            <mat-error *ngIf="isInvalid('dateFin')">Champ obligatoire</mat-error>
+          </mat-form-field>
+        
         </div><!-- /form-row-2 -->
 
-        <!-- Téléphone -->
+
+         <!-- ── SECTION 3: FACTURE ── -->
+        <div class="section-title">Informations Facture</div>
+        <div class="form-grid g4">
+          <mat-form-field appearance="outline">
+            <mat-label>N° Facture</mat-label>
+            <input matInput formControlName="numeroFacture" />
+            <mat-error *ngIf="isInvalid('numeroFacture')">Champ obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Montant total (MAD)</mat-label>
+            <input matInput type="number" formControlName="montant" min="0" />
+            <mat-error *ngIf="isInvalid('montant')">Montant invalide</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Paiements effectués (MAD)</mat-label>
+            <input matInput type="number" formControlName="paiements" min="0" />
+          </mat-form-field>
+        </div>
+
+        <div class="form-grid g2">
+          <mat-form-field appearance="outline">
+            <mat-label>Reste à payer — R.A.P (MAD)</mat-label>
+            <input matInput type="number" formControlName="rap" readonly />
+            <mat-hint>Calculé automatiquement</mat-hint>
+          </mat-form-field>
+
+          <!--<div class="field">
+            <label>Statut initial</label>
+            <div class="status-pill">En attente de prise en charge</div>
+          </div>-->
+        </div>
+
+        <hr class="divider" />
+
+
+         <!-- ── SECTION 4: RELANCES ── -->
+          <h5 class="form-section-title">
+          <i class="bi bi-person-vcard me-2"></i>Relances
+        </h5>
+        <div class="section-title">Relances</div>
+        <div class="form-grid g5">
+          <mat-form-field appearance="outline">
+            <mat-label>Numéro 1re relance</mat-label>
+            <input matInput type="number" formControlName="relance1" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date 1ère relance</mat-label>
+            <input matInput type="date" formControlName="dateRelance1" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Numéro 2e relance</mat-label>
+            <input matInput type="number" formControlName="relance2" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date 2ème relance</mat-label>
+            <input matInput type="date" formControlName="dateRelance2" />
+          </mat-form-field>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Téléphone 
         <div class="form-group" style="max-width: 300px">
           <label class="form-label" for="telephone">Téléphone</label>
-          <input type="tel"
-                 id="telephone"
-                 formControlName="telephone"
-                 class="form-control"
-                 placeholder="Ex : 0661234567"
-                 autocomplete="tel" />
-        </div>
+          <input type="tel"  id="telephone"  formControlName="telephone"
+                 class="form-control"  placeholder="Ex : 0661234567"  autocomplete="tel" />
+        </div>-->
 
       </div><!-- /form-section -->
 
       <!-- ── Section : Observation juridique ───────────────────────── -->
       <div class="form-section">
-        <h5 class="form-section-title">
-          <i class="bi bi-journal-text me-2"></i>Observation juridique
-        </h5>
+        <h5 class="form-section-title"> <i class="bi bi-journal-text me-2"></i>Observation juridique</h5>
 
         <div class="form-group">
-          <label class="form-label" for="observationJuridique">
-            Notes et observations
-          </label>
-          <textarea id="observationJuridique"
-                    formControlName="observationJuridique"
-                    class="form-control"
-                    rows="4"
-                    placeholder="Informations complémentaires, contexte juridique…">
-          </textarea>
+          <label class="form-label" for="observationJuridique"> Notes et observations </label>
+          <textarea id="observationJuridique" formControlName="observationJuridique" class="form-control" rows="4" placeholder="Informations complémentaires, contexte juridique…"></textarea>
           <div class="form-hint">
             Ces informations seront visibles uniquement par le Service Juridique.
           </div>
@@ -154,16 +254,11 @@
 
       <!-- ── Boutons ────────────────────────────────────────────────── -->
       <div class="form-actions">
-        <button type="button"
-                class="btn-annuler"
-                (click)="onReset()"
-                [disabled]="chargement">
+        <button type="button" class="btn-annuler" (click)="onReset()" [disabled]="chargement">
           <i class="bi bi-x-circle me-1"></i> Réinitialiser
         </button>
 
-        <button type="submit"
-                class="btn-enregistrer"
-                [disabled]="chargement">
+        <button type="submit"class="btn-enregistrer" [disabled]="chargement">
           <span *ngIf="chargement" class="spinner-border spinner-border-sm me-2"></span>
           <i class="bi bi-floppy me-1" *ngIf="!chargement"></i>
           {{ chargement ? 'Enregistrement…' : 'Enregistrer dans le système' }}

@@ -1,23 +1,78 @@
-/**
- * Correspond à l'entité JPA Dossier.java
- */
 export interface Dossier {
   idDossier?:             number;
+  referenceInterne?:      string;
+  
   ip:                     string;
-  numeroFacture:          string;
   beneficiaire?:          string;
   cin?:                   string;
-  telephone?:             string;
+  
+  // Soins
+  dateDebut:      string;
+  dateFin:        string;
+
+  // Facture
+  pole:           string;
+  numeroFacture:  string;
+  montant:        number;
+  paiements:      number;
+  rap:            number;
+
+  // Relances
+  relance1?:      number;
+  dateRelance1?:  string;
+  relance2?:      number;
+  dateRelance2?:  string;
+
+  //telephone?:             string;
+  
   statut?:                string;
-  motif?:                 string;
-  referenceInterne?:      string;
-  bordereau?:             string;
-  jugement?:              string;
-  dateAudience?:          string;
   observationJuridique?:  string;
+  
+  //motif?:                 string;
+  //bordereau?:             string;
+  //jugement?:              string;
+  //dateAudience?:          string;
+  
+    // Workflow
   dateCreation?:          string;
   dateMiseAJour?:         string;
 }
+
+//Dossier importe
+export interface DossierImport {
+  idDossier?:             number;
+  referenceInterne?:      string;
+  
+  ip:                     string;
+  beneficiaire?:          string;
+  cin?:                   string;
+  
+  // Soins
+  dateDebut:      string;
+  dateFin:        string;
+
+  // Facture
+  numeroFacture:  string;
+  montant:        number;
+  paiements:      number;
+  rap:            number;
+
+  // Relances
+  relance1?:      number;
+  dateRelance1?:  string;
+  relance2?:      number;
+  dateRelance2?:  string;
+
+  statut?:                string;
+  observationJuridique?:  string;
+  
+  // Workflow
+  dateCreation?:          string;
+  dateMiseAJour?:         string;
+}
+
+
+
 
 //Correspond à l'entité JPA HistoriqueDossier.java
 

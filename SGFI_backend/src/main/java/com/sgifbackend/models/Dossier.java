@@ -5,6 +5,8 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +24,21 @@ public class Dossier {
     @Column(nullable = false)
     private String ip;                      // Identifiant Patient
 
-    @Column(nullable = false)
-    private String numeroFacture;           // Numero de facture
-
+   
     //////////// Informations patient (dupliquées pour accès rapide) 
     private String beneficiaire;
     private String cin;
     private String telephone;
+    
+    @Column(name = "dateD")
+    private LocalDate dateD;   // Date début séjour
+    @Column(name = "dateF")
+    private LocalDate dateF;   // Date fin séjour
+    
+    @Column(nullable = false)
+    private String numeroFacture;           // Numero de facture
+    private BigDecimal montant;
+    private BigDecimal paiement;
 
     ////////////  Workflow 
     @Enumerated(EnumType.STRING)
@@ -66,12 +76,19 @@ public class Dossier {
      * Liaison logique en lecture seule avec la table dossiersImportes.
      * insertable/updatable = false : ip et numeroFacture déjà mappés ci-dessus.
      */
-    @OneToOne
+	//////////Relation vers les données brutes CCR permettant la saisait 
+	@OneToOne
+	@JoinColumns(value = {
+	 @JoinColumn(name = "ip",            referencedColumnName = "ip",            insertable = false, updatable = false),
+	 @JoinColumn(name = "numeroFacture", referencedColumnName = "numeroFacture", insertable = false, updatable = false)
+	}, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)) // <-- LA LIGNE MAGIQUE ICI
+	private DossierImport infosOrigine;
+    /*@OneToOne
     @JoinColumns({
         @JoinColumn(name = "ip",            referencedColumnName = "ip",            insertable = false, updatable = false),
         @JoinColumn(name = "numeroFacture", referencedColumnName = "numeroFacture", insertable = false, updatable = false)
     })
-    private DossierImport infosOrigine;
+    private DossierImport infosOrigine;*/
 
     /////////////Historique des actions
     @OneToMany(mappedBy = "dossier", cascade = CascadeType.ALL, orphanRemoval = true)

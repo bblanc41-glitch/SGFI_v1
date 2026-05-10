@@ -40,12 +40,40 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        try {
-            String token = extraireToken(request);
+    	
+    	try {
+    	    String token = extraireToken(request);
 
+    	    if (token != null && jwtUtil.isTokenValid(token)) {
+    	        String username = jwtUtil.extractUsername(token);
+    	        String role = jwtUtil.extractRole(token);
+
+    	        // On crée directement les droits à partir du token, ZÉRO requête SQL !
+    	        List<SimpleGrantedAuthority> autorisations = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+    	        
+    	        UsernamePasswordAuthenticationToken authentication = 
+    	            new UsernamePasswordAuthenticationToken(username, null, autorisations);
+    	            
+    	        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    	        SecurityContextHolder.getContext().setAuthentication(authentication);
+    	    }
+    	} catch (Exception e) {
+    	    logger.error("Erreur JWT : {}", e.getMessage());
+    	}
+    	
+    	
+    	
+        /* 1re version : Lenteur élevé 
+    	try {
+            String token = extraireToken(request);
+            //traque de l'erreur
+            
+            //System.out.println("1. Token présent dans la requête ? " + (token != null ? "OUI" : "NON"));
             if (token != null && jwtUtil.isTokenValid(token)) {
                 //isTokenValid() vérifie la signature HMAC et la date d'expiration
-
+            	
+            	//traque de l'erreur
+            	//System.out.println("2. Token valide (signature/expiration) ? " + jwtUtil.isTokenValid(token));
                 String username = jwtUtil.extractUsername(token); // => Lit le "subject" du JWT → username mis lors de la connexion
 
                 String role = jwtUtil.extractRole(token); // => Lit le claim "role" → mis dans generateToken() de AuthController
@@ -74,9 +102,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 });
             }
         } catch (Exception e) {
+        	//traque de l'erreur
+        	////e.printStackTrace(); // Va afficher l'erreur exacte dans la console
             logger.error("Impossible d'authentifier pour la requête : {}",
                 request.getRequestURI(), e);
-        }
+        }*/
 
         filterChain.doFilter(request, response);
     }

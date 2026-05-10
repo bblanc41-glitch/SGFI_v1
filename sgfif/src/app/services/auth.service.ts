@@ -6,7 +6,8 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private loginUrl = 'http://localhost:8080/api/auth/login';
+  //private loginUrl = 'http://localhost:8080/api/auth/login';
+  private loginUrl = 'http://127.0.0.1:8080/api/auth/login';//Pour resoudre pb lenteur
 
   constructor(private http: HttpClient) {}
 
@@ -81,10 +82,11 @@ export class AuthService {
 
       return JSON.parse(json);
 
-    } catch {
+    } catch(e) {
       // On retourne null SANS appeler logout().
       // Si le token est vraiment invalide, le backend le rejettera (401)
       // et le composant gèrera la redirection lui-même.
+      console.warn('[AuthService] getDecodedToken() : décodage échoué', e);
       return null;
     }
   }

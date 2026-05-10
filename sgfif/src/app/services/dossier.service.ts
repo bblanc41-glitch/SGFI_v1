@@ -21,7 +21,8 @@ import { Dossier, DossierRecent, Stats, RapportImport, Notification } from '../m
 @Injectable({ providedIn: 'root' })
 export class DossierService {
 
-  private readonly api = 'http://localhost:8080/api';
+  //private readonly api = 'http://localhost:8080/api';
+  private readonly api = 'http://127.0.0.1:8080/api';//Pour résoudre Pb lenteur
 
   constructor(private http: HttpClient) {}
 
@@ -37,6 +38,11 @@ export class DossierService {
     return this.http.post<Dossier>(`${this.api}/dossiers`, dossier);
   }
 
+ //Mis à jour du dossier
+  update(id: number, dossier: Partial<Dossier>): Observable<Dossier> {
+    return this.http.put<Dossier>(`${this.api}/dossiers/${id}`, dossier);
+  }
+
   // ── IMPORTATION CCR ──────────────────────────────────────────────────────
   // Anciennement "importCcr" — renommé pour correspondre
   // à l'appel this.dossierService.importerCcr() dans importation.ts
@@ -45,6 +51,12 @@ export class DossierService {
     return this.http.post<RapportImport>(`${this.api}/importation`, formData);
     // Note : pas de { responseType: 'text' } — le backend renvoie du JSON
     // (voir ImportationController.java → ResponseEntity<Map<String, Object>>)
+  }
+
+
+  //Suppression dun dossier
+  delete(id: number): Observable<void> {
+  return this.http.delete<void>(`${this.api}/dossiers/${id}`);
   }
 
   // ── STATISTIQUES (tableau de bord) ───────────────────────────────────────
@@ -56,7 +68,7 @@ export class DossierService {
 
   // ── DOSSIERS RÉCENTS (tableau de bord) ───────────────────────────────────
   // GET /api/dossiers/recent?limit=5
-  getRecent(limit: number = 5): Observable<DossierRecent[]> {
+  getRecent(limit: number ): Observable<DossierRecent[]> {
     return this.http.get<DossierRecent[]>(`${this.api}/dossiers/recent?limit=${limit}`);
   }
 
@@ -66,6 +78,41 @@ export class DossierService {
   getNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.api}/notifications`);
   }
+
+  getById(ip: number): Observable<Dossier> {
+    return this.http.get<Dossier>(`${this.api}/dossiers/${ip}`);
+  }
+
+  /*
+  
+  search(query: string): Observable<Dossier[]> {  
+    return this.http.get<Dossier[]>(`${this.api}/dossiers/search?query=${query}`);
+  }
+
+  uploadPieces(dossierId: number, files: File[]): Observable<any> {
+    const formData = new FormData();
+    files.forEach(f => formData.append('files', f));
+    return this.http.post(`${this.api}/dossiers/${dossierId}/pieces`, formData);
+  }
+
+  importExcel(formData: FormData): Observable<any> {
+    return this.http.post(`${this.api}/dossiers/import`, formData);
+  }
+
+  downloadTemplate(): Observable<Blob> {
+    return this.http.get(`${this.api}/dossiers/import/template`, { responseType: 'blob' });
+  }
+
+  */
+
+ 
+
+
+
+
+
+
+
 }
 
 /* Version 3

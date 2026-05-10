@@ -1,4 +1,4 @@
-/* version 2
+/* version 2*/
 
 // src/app/services/jwt.interceptor.spec.ts
 
@@ -65,7 +65,7 @@ describe('jwtInterceptor', () => {
 
     req.flush([]);
   });
-});*/
+});
 
 
 
