@@ -59,6 +59,38 @@ CREATE TABLE IF NOT EXISTS dossiers (
     
     --  CONSTRAINT fk_beneficiaire FOREIGN KEY (beneficiaire) REFERENCES dossiersImportes (beneficiaire) ON DELETE CASCADE
     
+    -- Les tables sont toutes dependance coté suppression à modifer
+    -- Désactiver temporairement les vérifications de clés étrangères
+		/*
+		SET FOREIGN_KEY_CHECKS = 0;
+		
+		-- Vider les tables dans l'ordre (dépendances → parents)
+		TRUNCATE TABLE historique_dossiers;
+		TRUNCATE TABLE pieces_jointes;      -- si vous avez créé cette table
+		TRUNCATE TABLE dossiers;
+		TRUNCATE TABLE dossiers_importes;
+		TRUNCATE TABLE utilisateurs;        -- optionnel, gardez l'admin
+		
+		-- Réactiver les vérifications
+		SET FOREIGN_KEY_CHECKS = 1;
+	    */
+	    
+	    
+	    
+	    -- Table des pièces justificatives attachées aux dossiers
+		CREATE TABLE IF NOT EXISTS pieces_jointes (
+		    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+		    nom_fichier VARCHAR(255) NOT NULL,
+		    chemin_stockage VARCHAR(500) NOT NULL,
+		    taille BIGINT NOT NULL,
+		    id_dossier BIGINT NOT NULL,
+		    date_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		    CONSTRAINT fk_pieces_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+			    
+	    
+	    
+	    
     
     /*
   		Version 2

@@ -221,4 +221,9 @@ public class FileStorageUtil {
         // ↑ Retourne l'extension avec le point : ex ".pdf", ".jpg"
     }
     
+    
+    public String getUploadDir() {
+        return uploadDir;
+    }
+    
 }

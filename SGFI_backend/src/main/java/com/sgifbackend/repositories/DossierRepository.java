@@ -24,6 +24,11 @@ public interface DossierRepository extends JpaRepository<Dossier, Long> {
         """)
     List<Dossier> findAllAvecInfos();
     
+    /*
+     @Query(value = "SELECT d.* FROM dossiers d ORDER BY d.date_mise_a_jour DESC LIMIT :limit", nativeQuery = true)
+	 List<Dossier> findRecentWithLimit(@Param("limit") int limit);
+     * */
+    
  // ── 5 DERNIERS DOSSIERS — dashboard (avec infos origine en une requête) ──
     @Query("""
         SELECT d FROM Dossier d
@@ -59,15 +64,22 @@ public interface DossierRepository extends JpaRepository<Dossier, Long> {
     long countByStatut(Statut statut);
     
     
-    //calcul MontantImpaye
-    //@Query("SELECT COALESCE(SUM(i.RAP), 0) FROM Dossier d JOIN d.infosOrigine i WHERE d.statut != 'CLOTURE'")
+    /*calcul MontantImpaye si table dossier et importer
     @Query(value = """
             SELECT COALESCE(SUM(di.RAP), 0)
-            FROM   dossiersImportes di
+            FROM   dossiers_importes di
             INNER JOIN dossiers d
-                   ON  d.ip             = di.ip
-                   AND d.numeroFacture  = di.numeroFacture
+                   ON  d.ip = di.ip
+                   AND d.numero_facture = di.numero_facture
             WHERE  d.statut != 'CLOTURE'
             """, nativeQuery = true)
+    Double sommeRestesAPayer();*/
+    
+    @Query(value = """
+            SELECT COALESCE(SUM(montant - COALESCE(paiement, 0)), 0)
+            FROM dossiers
+            WHERE statut != 'CLOTURE'
+            """, nativeQuery = true)
     Double sommeRestesAPayer();
+    
 }

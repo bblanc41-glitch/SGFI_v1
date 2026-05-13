@@ -195,13 +195,18 @@
                   </span>
                 </td>
                 <td>
-                  <a class="btn-voir"
+                  <!--<a class="btn-voir"
                      [routerLink]="['/liste-dossiers']">
                     <i class="bi bi-eye"></i> Voir
-                  </a>
+                  </a>-->
+                  <button class="btn btn-sm btn-info me-1" (click)="voirDossier(d.idDossier)">
+                    <i class="bi bi-eye"></i> Voir
+                  </button>
                 </td>
               </tr>
 
+
+              
               <!-- Ligne vide si aucun dossier -->
               <tr *ngIf="recentDossiers.length === 0">
                 <td colspan="7" class="empty-row">

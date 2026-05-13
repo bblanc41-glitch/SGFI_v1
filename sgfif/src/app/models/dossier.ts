@@ -5,6 +5,7 @@ export interface Dossier {
   ip:                     string;
   beneficiaire?:          string;
   cin?:                   string;
+  telephone?:             string;
   
   // Soins
   dateDebut:      string;
@@ -23,7 +24,6 @@ export interface Dossier {
   relance2?:      number;
   dateRelance2?:  string;
 
-  //telephone?:             string;
   
   statut?:                string;
   observationJuridique?:  string;
@@ -218,22 +218,15 @@ export function getBadgeClass(statut: string): string {
 
 
 
+export interface PieceJointe {
+  id: number;
+  nomFichier: string;
+  cheminStockage: string;
+  taille: number;
+  dateUpload: string;   // ou Date selon ce que renvoie le backend
+}
 
 
 
 
 
-
-
-
-
-/*export interface Dossier {
-  idDossier?:            number;   // Généré par le serveur (AUTO_INCREMENT)
-  ip:                    string;   // Identifiant Patient — obligatoire (clé composite)
-  numeroFacture:         string;   // Numéro de facture  — obligatoire (clé composite)
-  beneficiaire?:         string;   // Nom du patient (colonne ajoutée dans le SQL v2)
-  telephone?:            string;
-  statut?:               string;   // 'en attente de prise en charge' par défaut
-  referenceInterne?:     string;
-  observationJuridique?: string;
-}*/

@@ -3,6 +3,8 @@ package com.sgifbackend.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
@@ -39,7 +41,11 @@ public class Dossier {
     private String numeroFacture;           // Numero de facture
     private BigDecimal montant;
     private BigDecimal paiement;
-
+    
+    @Column(name = "rap")
+    private BigDecimal rap;    // Reste À Payer
+ 
+    
     ////////////  Workflow 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -82,6 +88,7 @@ public class Dossier {
 	 @JoinColumn(name = "ip",            referencedColumnName = "ip",            insertable = false, updatable = false),
 	 @JoinColumn(name = "numeroFacture", referencedColumnName = "numeroFacture", insertable = false, updatable = false)
 	}, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)) // <-- LA LIGNE MAGIQUE ICI
+	@NotFound(action = NotFoundAction.IGNORE)   // ← AJOUTER CETTE LIGNE
 	private DossierImport infosOrigine;
     /*@OneToOne
     @JoinColumns({

@@ -94,7 +94,7 @@ public class ImportationService {
                     di.setNumeroFacture(facture);
                     di.setMontant(lireDecimal(row, 6));
                     di.setPaiement(lireDecimal(row, 7));
-                    di.setRAP(lireDecimal(row, 8));
+                    di.setRap(lireDecimal(row, 8));
                     importRepo.save(di);
  
                     // Création automatique du dossier juridique (statut IMPORTE_CCR)

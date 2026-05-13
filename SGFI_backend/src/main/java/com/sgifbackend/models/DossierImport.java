@@ -40,20 +40,30 @@ public class DossierImport {
     private LocalDate dateF;   // Date fin séjour
  
 
-    @Column(nullable = false)
-    private String numeroFacture;
+    @Column(name = "numeroFacture") private String numeroFacture;
+
 
     private BigDecimal montant;
     private BigDecimal paiement;
 
     @Column(name = "RAP")
-    private BigDecimal RAP;    // Reste À Payer
+    private BigDecimal rap;    // Reste À Payer
  
     //Relances
+    @Column(name = "numeroRelance1")
     private long relance1;
+
+    @Column(name = "dateRelance1")
     private Date dateRelance1;
+    
+    @Column(name = "numeroRelance2")
     private long relance2;
+    
+    @Column(name = "dateRelance2")
     private Date dateRelance2;
+    
+    @Column(name = "observation")
+    private String observation;
     
     @CreationTimestamp
     @Column(name = "date_importation", updatable = false)

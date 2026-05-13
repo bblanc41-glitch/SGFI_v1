@@ -2,7 +2,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Dossier, DossierRecent, Stats, RapportImport, Notification } from '../models/dossier';
+import { Dossier, DossierRecent, Stats, RapportImport, Notification,PieceJointe } from '../models/dossier';
 
 /**
  * DossierService — toutes les requêtes HTTP vers le backend Spring Boot.
@@ -10,13 +10,6 @@ import { Dossier, DossierRecent, Stats, RapportImport, Notification } from '../m
  * Le JwtInterceptor (enregistré dans app.config.ts via withInterceptors)
  * ajoute automatiquement l'en-tête Authorization: Bearer <token>
  * sur chaque requête → pas besoin de gérer les headers ici.
- *
- * CORRECTIONS APPLIQUÉES :
- *  - enregistrerDossier() → renommé creer()          (appelé par saisie-dossier.ts)
- *  - importCcr()          → renommé importerCcr()     (appelé par importation.ts)
- *  - Ajout getStats()                                 (appelé par dashboard.ts)
- *  - Ajout getRecent()                                (appelé par dashboard.ts)
- *  - Ajout getNotifications()                         (appelé par dashboard.ts)
  */
 @Injectable({ providedIn: 'root' })
 export class DossierService {
@@ -32,8 +25,6 @@ export class DossierService {
   }
 
   // ── SAISIE MANUELLE ──────────────────────────────────────────────────────
-  // Anciennement "enregistrerDossier" — renommé pour correspondre
-  // à l'appel this.dossierService.creer() dans saisie-dossier.ts
   creer(dossier: Dossier): Observable<Dossier> {
     return this.http.post<Dossier>(`${this.api}/dossiers`, dossier);
   }
@@ -43,15 +34,22 @@ export class DossierService {
     return this.http.put<Dossier>(`${this.api}/dossiers/${id}`, dossier);
   }
 
+  uploadPiece(id: number, formData: FormData): Observable<any> {
+  return this.http.post(`${this.api}/dossiers/${id}/pieces`, formData);
+}
+
   // ── IMPORTATION CCR ──────────────────────────────────────────────────────
-  // Anciennement "importCcr" — renommé pour correspondre
-  // à l'appel this.dossierService.importerCcr() dans importation.ts
-  // Retourne un RapportImport { importes, doublons, erreurs, details[] }
-  importerCcr(formData: FormData): Observable<RapportImport> {
+   importerCcr(formData: FormData): Observable<RapportImport> {
     return this.http.post<RapportImport>(`${this.api}/importation`, formData);
     // Note : pas de { responseType: 'text' } — le backend renvoie du JSON
     // (voir ImportationController.java → ResponseEntity<Map<String, Object>>)
   }
+
+  changerStatut(id: number, statut: string, motif?: string): Observable<Dossier> {
+    const body = { statut, motif };
+    return this.http.patch<Dossier>(`${this.api}/dossiers/${id}/statut`, body);
+  }
+
 
 
   //Suppression dun dossier
@@ -60,28 +58,31 @@ export class DossierService {
   }
 
   // ── STATISTIQUES (tableau de bord) ───────────────────────────────────────
-  // GET /api/dossiers/stats
   // Retourne { total, enAttente, envoyeAvocat, enInstance, cloture, incomplet, montantImpaye }
   getStats(): Observable<Stats> {
     return this.http.get<Stats>(`${this.api}/dossiers/stats`);
   }
 
   // ── DOSSIERS RÉCENTS (tableau de bord) ───────────────────────────────────
-  // GET /api/dossiers/recent?limit=5
   getRecent(limit: number ): Observable<DossierRecent[]> {
     return this.http.get<DossierRecent[]>(`${this.api}/dossiers/recent?limit=${limit}`);
   }
 
   // ── NOTIFICATIONS ────────────────────────────────────────────────────────
-  // GET /api/notifications
-  // L'erreur est gérée silencieusement dans dashboard.ts (badge reste à 0)
-  getNotifications(): Observable<Notification[]> {
+   getNotifications(): Observable<Notification[]> {
     return this.http.get<Notification[]>(`${this.api}/notifications`);
   }
 
   getById(ip: number): Observable<Dossier> {
     return this.http.get<Dossier>(`${this.api}/dossiers/${ip}`);
   }
+
+  /*
+  getById(id: number): Observable<Dossier> {
+    return this.http.get<Dossier>(`${this.api}/dossiers/${id}`);
+  }
+  */
+
 
   /*
   
@@ -105,7 +106,21 @@ export class DossierService {
 
   */
 
- 
+  getPieces(dossierId: number): Observable<PieceJointe[]> {
+  return this.http.get<PieceJointe[]>(`${this.api}/dossiers/${dossierId}/pieces`);
+}
+
+downloadPiece(dossierId: number, chemin: string): Observable<Blob> {
+  // Endpoint GET avec paramètre "fichier" (selon votre contrôleur existant)
+  return this.http.get(`${this.api}/dossiers/${dossierId}/pieces`, {
+    params: { fichier: chemin },
+    responseType: 'blob'
+  });
+}
+
+deletePiece(dossierId: number, pieceId: number): Observable<void> {
+  return this.http.delete<void>(`${this.api}/dossiers/${dossierId}/pieces/${pieceId}`);
+}
 
 
 
