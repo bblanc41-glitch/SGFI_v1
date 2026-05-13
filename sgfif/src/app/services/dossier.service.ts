@@ -69,13 +69,30 @@ export class DossierService {
   }
 
   // ── NOTIFICATIONS ────────────────────────────────────────────────────────
-   getNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(`${this.api}/notifications`);
-  }
+  
 
   getById(ip: number): Observable<Dossier> {
     return this.http.get<Dossier>(`${this.api}/dossiers/${ip}`);
   }
+
+  getNotifications(): Observable<Notification[]> {
+    return this.http.get<Notification[]>(`${this.api}/notifications`);
+  }
+
+  getNombreNonLues(): Observable<number> {
+    return this.http.get<number>(`${this.api}/notifications/non-lues`);
+  }
+
+  marquerCommeLue(id: number): Observable<void> {
+    return this.http.put<void>(`${this.api}/notifications/${id}/lu`, {});
+  }
+
+  supprimerNotification(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.api}/notifications/${id}`);
+  }
+
+
+
 
   /*
   getById(id: number): Observable<Dossier> {
@@ -105,8 +122,8 @@ export class DossierService {
   }
 
   */
-
-  getPieces(dossierId: number): Observable<PieceJointe[]> {
+///////////////Pieces justificatives
+getPieces(dossierId: number): Observable<PieceJointe[]> {
   return this.http.get<PieceJointe[]>(`${this.api}/dossiers/${dossierId}/pieces`);
 }
 

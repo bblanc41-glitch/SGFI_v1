@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS dossiersImportes (
     montant DECIMAL(15, 2),
     paiement DECIMAL(15, 2) DEFAULT 0,
     RAP DECIMAL(15, 2),               -- Reste à Payer
-    numeroRelance1 INT,
+    relance1 INT,
     dateRelance1 DATE,
-    numeroRelance2 INT,
+    relance2 INT,
     dateRelance2 DATE,
     observations TEXT,
     date_importation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -87,7 +87,18 @@ CREATE TABLE IF NOT EXISTS dossiers (
 		    date_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		    CONSTRAINT fk_pieces_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-			    
+		
+		
+		-- table Notification
+		CREATE TABLE IF NOT EXISTS `notifications` (
+		    `id` BIGINT NOT NULL AUTO_INCREMENT,
+		    `message` VARCHAR(255) NOT NULL,
+		    `type` VARCHAR(50) DEFAULT NULL,
+		    `id_dossier` BIGINT DEFAULT NULL,
+		    `lu` TINYINT(1) DEFAULT 0,
+		    `date_creation` DATETIME DEFAULT CURRENT_TIMESTAMP,
+		    PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;	    
 	    
 	    
 	    

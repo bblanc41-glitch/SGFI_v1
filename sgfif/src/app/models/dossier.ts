@@ -226,6 +226,16 @@ export interface PieceJointe {
   dateUpload: string;   // ou Date selon ce que renvoie le backend
 }
 
+//Notifications
+
+export interface Notification {
+  id: number;
+  message: string;
+  type: string;
+  idDossier?: number;
+  lu: boolean;
+  dateCreation: string;
+}
 
 
 

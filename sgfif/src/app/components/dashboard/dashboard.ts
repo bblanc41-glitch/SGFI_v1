@@ -28,7 +28,7 @@ export class Dashboard implements OnInit {
 
   notifications: Notification[] = [];
   recentDossiers: DossierRecent[] = [];
-
+  notifCount = 0; 
   activeMenu = 'dashboard';
 
   getLibelle    = getLibelle;
@@ -36,6 +36,7 @@ export class Dashboard implements OnInit {
 
   // Compteur pour savoir quand tous les appels sont terminés
   private appelsEnCours = 0;
+  
 
   constructor(
     private dossierService: DossierService,
@@ -48,8 +49,8 @@ export class Dashboard implements OnInit {
     this.chargerUtilisateur();
     this.chargerStats();
     this.chargerDossiersRecents();
-    // this.chargerNotifications();  // ← 3. Commenté temporairement (404)
-  }
+    this.chargerNotifCount();
+   }
 
   private verifierFinChargement(): void {
     this.appelsEnCours--;
@@ -101,6 +102,18 @@ export class Dashboard implements OnInit {
     });
   }
 
+   chargerNotifCount(): void {
+    this.dossierService.getNombreNonLues().subscribe({
+      next: (count) => {
+        this.notifCount = count;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifCount = 0;
+      }
+    });
+  }
+
   voirDossier(id: number | undefined): void {
     if (id) this.router.navigate(['/dossier-detail', id]);
   }
@@ -123,9 +136,7 @@ export class Dashboard implements OnInit {
   }
   */
 
-  get notifCount(): number {
-    return this.notifications.filter(n => !n.lue).length;
-  }
+
 
   get cartes() {
     return [

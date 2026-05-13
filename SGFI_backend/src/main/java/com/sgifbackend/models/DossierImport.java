@@ -50,13 +50,13 @@ public class DossierImport {
     private BigDecimal rap;    // Reste À Payer
  
     //Relances
-    @Column(name = "numeroRelance1")
+    @Column(name = "relance1")
     private long relance1;
 
     @Column(name = "dateRelance1")
     private Date dateRelance1;
     
-    @Column(name = "numeroRelance2")
+    @Column(name = "relance2")
     private long relance2;
     
     @Column(name = "dateRelance2")

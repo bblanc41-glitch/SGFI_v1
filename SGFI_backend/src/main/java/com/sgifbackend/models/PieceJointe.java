@@ -3,6 +3,9 @@ package com.sgifbackend.models;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,10 +24,19 @@ public class PieceJointe {
     private String cheminStockage;
 
     private Long taille;
-
+    
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_dossier", nullable = false)
+    @JsonIgnore
     private Dossier dossier;
+    /*
+      @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dossier", nullable = false)
+    private Dossier dossier;*/
+    
+    
+    
 
     @CreationTimestamp
     @Column(name = "date_upload")

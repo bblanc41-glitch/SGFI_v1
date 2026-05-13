@@ -2,7 +2,10 @@ package com.sgifbackend.services;
  
 import com.sgifbackend.models.Dossier;
 import com.sgifbackend.models.DossierImport;
+import com.sgifbackend.models.Notification;
 import com.sgifbackend.repositories.DossierImportRepository;
+import com.sgifbackend.repositories.NotificationRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -47,7 +50,7 @@ public class ImportationService {
  
     private final DossierImportRepository importRepo;
     private final DossierService          dossierService;
- 
+    private final NotificationRepository notificationRepository; 
     /**
      * Importe un fichier Excel CCR et crée les dossiers correspondants.
      *
@@ -59,7 +62,8 @@ public class ImportationService {
                                                    String auteur) throws IOException {
         int importes = 0, doublons = 0, erreurs = 0;
         List<String> details = new ArrayList<>();
- 
+        
+        
         try (Workbook wb = new XSSFWorkbook(fichier.getInputStream())) {
             Sheet sheet = wb.getSheetAt(0);
  
@@ -71,7 +75,7 @@ public class ImportationService {
                 try {
                     String ip      = lireTexte(row, 0);
                     String facture = lireTexte(row, 5);
- 
+                    
                     if (ip.isBlank() || facture.isBlank()) {
                         erreurs++;
                         details.add("Ligne " + (i+1) + " : IP ou numéro de facture manquant");
@@ -80,7 +84,15 @@ public class ImportationService {
  
                     if (importRepo.existsByIpAndNumeroFacture(ip, facture)) {
                         doublons++;
-                        details.add("Ligne " + (i+1) + " : doublon ignoré (IP=" + ip + ")");
+                        log.info("Doublon ignoré : IP={}, facture={}", ip, facture);
+                        notificationRepository.save(Notification.builder()
+                        	    .message("Doublon ignoré : IP=" + ip + ", facture=" + facture)
+                        	    .type("DOUBLON_IMPORT")
+                        	    .idDossier(null)
+                        	    .lu(false)
+                        	    .build());
+                        
+                        details.add("Ligne " + (i+1) + " : doublon ignoré (IP=" + ip + ")"); // optionnel
                         continue;
                     }
  
@@ -155,13 +167,31 @@ public class ImportationService {
         } catch (Exception e) { return null; }
     }
  
+    
+    
+    private BigDecimal lireDecimal(Row row, int col) {
+        Cell c = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
+        if (c == null) return BigDecimal.ZERO;
+        try {
+            if (c.getCellType() == CellType.NUMERIC) {
+                return BigDecimal.valueOf(c.getNumericCellValue());
+            } else if (c.getCellType() == CellType.STRING) {
+                String val = c.getStringCellValue().trim().replace(',', '.');
+                return new BigDecimal(val);
+            }
+        } catch (Exception e) { }
+        return BigDecimal.ZERO;
+    }
+    /*
     private BigDecimal lireDecimal(Row row, int col) {
         Cell c = row.getCell(col, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
         if (c == null) return BigDecimal.ZERO;
         try { return BigDecimal.valueOf(c.getNumericCellValue()); }
         catch (Exception e) { return BigDecimal.ZERO; }
-    }
+    }*/
  
+    
+    
     private boolean estVide(Row row) {
         for (int i = row.getFirstCellNum(); i < row.getLastCellNum(); i++) {
             Cell c = row.getCell(i);
@@ -172,7 +202,7 @@ public class ImportationService {
     }	
 	
 	
-	
+}	
 	
 	
 /* Ancienne Version
@@ -316,4 +346,3 @@ public class ImportationService {
         }
         return true;
     } */
-}

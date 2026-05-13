@@ -208,6 +208,13 @@ public class DossierService {
         return String.format("REF-JUR-%d-%04d", Year.now().getValue(), n);
     }
 	
+    /*Eviter les doublons avec UUID
+     private String genererReference() {
+    // Génération unique : REF-JUR-2026-A8F3C2D1 (8 premiers caractères d'un UUID)
+    String uuidPart = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    return String.format("REF-JUR-%d-%s", Year.now().getValue(), uuidPart);
+	}
+     * */
 	
 	
 	

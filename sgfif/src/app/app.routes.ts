@@ -6,6 +6,7 @@ import { SaisieDossier } from './components/saisie-dossier/saisie-dossier';
 import { Importation }   from './components/importation/importation';
 import { authGuard }     from './guards/auth-guard';
 import { DetailDossier } from './components/detail-dossier/detail-dossier';
+import { Notifications } from './components/notifications/notifications';
 
 export const routes: Routes = [
   { path: 'login',          component: Login                                        },
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'saisie-manuelle',component: SaisieDossier, canActivate: [authGuard]      },
   { path: 'importation',    component: Importation,   canActivate: [authGuard]      },
   { path: 'dossier-detail/:id', component: DetailDossier, canActivate: [authGuard] },
+  { path: 'notifications', component: Notifications, canActivate: [authGuard]},
   { path: '',               redirectTo: '/login',     pathMatch: 'full'             },
   { path: '**',             redirectTo: '/login'                                    },
 ];
