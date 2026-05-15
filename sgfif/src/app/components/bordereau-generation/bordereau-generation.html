@@ -1,0 +1,54 @@
+<div class="bordereau-page">
+  <div class="bordereau-card">
+    <div class="bordereau-header">
+      <h2>Générer un bordereau d'envoi à l'avocat</h2>
+      <a routerLink="/dashboard" class="btn-retour">← Retour</a>
+    </div>
+
+    <div class="filtre-section">
+      <input type="text" [(ngModel)]="recherche" (input)="filtrer()" placeholder="Rechercher par IP, bénéficiaire, référence..." class="form-control" />
+    </div>
+
+    <div class="ref-section">
+      <label>Référence avocat / tribunal (optionnelle) :</label>
+      <input type="text" [(ngModel)]="referenceExterne" placeholder="Ex: REF-TRIB-2025-001" class="form-control" />
+      <small>Cette référence sera ajoutée à tous les dossiers sélectionnés.</small>
+    </div>
+
+    <div *ngIf="chargement" class="loading-spinner">Chargement...</div>
+
+    <!-- Message si aucun dossier -->
+    <div *ngIf="!chargement && dossiersFiltres.length === 0" class="no-data">
+      Aucun dossier disponible.
+    </div>
+
+    <table class="data-table" *ngIf="!chargement && dossiersFiltres.length > 0">
+      <thead>
+        <tr>
+          <th><input type="checkbox" (change)="toggleAll($event)" /></th>
+          <th>ID</th>
+          <th>Référence interne</th>
+          <th>IP</th>
+          <th>Bénéficiaire</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of dossiersFiltres">
+          <td><input type="checkbox" (change)="toggleSelection(d, $event)" [checked]="selectionnes.has(d.idDossier!)" /></td>
+          <td>{{ d.idDossier }}</td>
+          <td class="ref">{{ d.referenceInterne }}</td>
+          <td>{{ d.ip }}</td>
+          <td>{{ d.beneficiaire }}</td>
+          <td><span class="badge">{{ d.statut }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="actions">
+      <button class="btn-generer" (click)="genererBordereau()" [disabled]="selectionnes.size === 0">
+        📄 Générer le bordereau ({{ selectionnes.size }} dossier(s))
+      </button>
+    </div>
+  </div>
+</div>

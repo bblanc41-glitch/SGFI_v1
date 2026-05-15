@@ -140,8 +140,15 @@ deletePiece(dossierId: number, pieceId: number): Observable<void> {
 }
 
 
+/////////////////Generer bordereau
+genererBordereauEnvoi(payload: { ids: number[], referenceExterne?: string }): Observable<Blob> {
+  return this.http.post(`${this.api}/dossiers/bordereaux/envoi`, payload, { responseType: 'blob' });
+}
 
 
+genererBordereau(id: number): Observable<Blob> {
+  return this.http.get(`${this.api}/dossiers/${id}/bordereau`, { responseType: 'blob' });
+}/**/
 
 
 

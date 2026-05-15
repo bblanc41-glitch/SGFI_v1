@@ -52,6 +52,13 @@
       </a>
 
       <a class="sidebar-item"
+        [class.active]="activeMenu === 'bordereau'"
+        (click)="setMenu('bordereau')"
+        routerLink="/bordereau">
+        <i class="bi bi-file-pdf-fill s-icon"></i> Générer bordereau
+      </a>
+
+      <a class="sidebar-item"
          [class.active]="activeMenu === 'notifications'"
          (click)="setMenu('notifications')"
          routerLink="/notifications">

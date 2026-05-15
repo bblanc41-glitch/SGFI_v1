@@ -77,6 +77,10 @@ public class Dossier {
     @UpdateTimestamp
     private LocalDateTime dateMiseAJour;
 
+    // Ref pour suivi du dossier auprès de l'avocat
+    @Column(name = "reference_externe", length = 50)
+    private String referenceExterne;
+    
     ////////// Relation vers les données brutes CCR
     /**
      * Liaison logique en lecture seule avec la table dossiersImportes.

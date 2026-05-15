@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS dossiers (
     CONSTRAINT fk_dossier_unique FOREIGN KEY (ip, numeroFacture) REFERENCES dossiersImportes(ip, numeroFacture) ON DELETE CASCADE
     );
     
+    ALTER TABLE dossiers ADD COLUMN reference_externe VARCHAR(50) DEFAULT NULL;
     
     --  CONSTRAINT fk_beneficiaire FOREIGN KEY (beneficiaire) REFERENCES dossiersImportes (beneficiaire) ON DELETE CASCADE
     

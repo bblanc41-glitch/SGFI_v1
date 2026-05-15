@@ -14,9 +14,7 @@ export class Notifications implements OnInit {
   notifications: Notification[] = [];
   chargement = true;
 
-  constructor(private dossierService: DossierService, private cdr: ChangeDetectorRef) {
-
-  }
+  constructor(private dossierService: DossierService, private cdr: ChangeDetectorRef) { }
 
   ngOnInit(): void {
   this.dossierService.getNotifications().subscribe({

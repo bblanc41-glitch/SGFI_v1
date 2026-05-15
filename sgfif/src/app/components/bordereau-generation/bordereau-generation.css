@@ -1,0 +1,10 @@
+.bordereau-page { padding: 2rem; background: #f4f6f9; min-height: 100%; }
+.bordereau-card { background: #fff; border-radius: 12px; padding: 1.5rem; max-width: 1000px; margin: 0 auto; }
+.bordereau-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.filtre-section, .ref-section { margin-bottom: 1.5rem; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th, .data-table td { padding: 0.5rem; text-align: left; border-bottom: 1px solid #e8edf5; }
+.ref-section label { font-weight: 600; display: block; margin-bottom: 0.5rem; }
+.form-control { width: 100%; padding: 0.5rem; border: 1px solid #c8d0e0; border-radius: 6px; }
+.btn-generer { background: #1565C0; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 600; }
+.btn-generer:disabled { background: #9aa8c0; cursor: not-allowed; }

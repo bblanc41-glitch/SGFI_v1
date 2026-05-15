@@ -15,7 +15,6 @@
       <div class="action-bar">
         <button *ngIf="!modeEdition" class="btn-modifier" (click)="basculerEdition()">✏️ Modifier</button>
         <button *ngIf="modeEdition" class="btn-annuler" (click)="basculerEdition()">Annuler</button>
-        <button class="btn-cloturer" (click)="cloturer()">🔒 Clôturer</button>
       </div>
 
       <!-- Zone d'affichage en mode consultation -->
@@ -54,6 +53,34 @@
         </div>
       </div>
 
+      <!-- Liste des pièces jointes existantes -->
+      <div *ngIf="pieces.length > 0">
+        <h5>Pièces jointes</h5>
+        <table class="table-pieces">
+          <thead>
+            <tr>
+              <th>Nom du fichier</th>
+              <th>Taille</th>
+              <th>Date d'upload</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of pieces">
+              <td>{{ p.nomFichier }}</td>
+              <td>{{ (p.taille / 1024) | number:'1.0-0' }} Ko</td>
+              <td>{{ p.dateUpload | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <button class="btn-icon" (click)="voirPiece(p.cheminStockage, p.nomFichier)" title="Voir">👁️</button>
+                <button class="btn-icon" (click)="telechargerPiece(p.cheminStockage, p.nomFichier)" title="Télécharger">⬇️</button>
+                <button class="btn-icon" (click)="supprimerPiece(p.id)" title="Supprimer">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="pieces.length === 0" class="no-pieces">Aucune pièce jointe pour ce dossier.</div>
+
       <!-- Formulaire de modification -->
       <div *ngIf="modeEdition" class="form-edition">
         <div class="form-group">
@@ -75,16 +102,76 @@
         <button class="btn-enregistrer" (click)="enregistrerModifications()">Enregistrer</button>
       </div>
 
-      <!-- Upload de pièces justificatives -->
+      <!-- Workflow : changement de statut -->
+      <div class="workflow-block" *ngIf="transitions.length > 0">
+        <label for="statutSelect">Changer le statut :</label>
+        <select id="statutSelect" [(ngModel)]="statutSelectionne" (change)="onStatutChange()">
+          <option *ngFor="let s of transitions" [value]="s">{{ getLibelle(s) }}</option>
+        </select>
+
+        <!-- Champ motif (visible seulement pour CLOTURE ou INCOMPLET) -->
+        <div *ngIf="showMotifField" class="motif-group">
+          <label for="motif">Motif :</label>
+          <input type="text" id="motif" [(ngModel)]="motifRequis" placeholder="Motif obligatoire" class="form-control" />
+        </div>
+
+        <button class="btn-workflow" (click)="appliquerChangementStatut()">Appliquer</button>
+      </div>
+
+      <!-- Upload de nouvelles pièces justificatives -->
       <hr />
-      <h4>Pièces justificatives</h4>
+      <h4>Ajouter une pièce justificative</h4>
       <div class="upload-section">
         <input type="file" (change)="onFileSelected($event)" />
         <button class="btn-upload" (click)="uploadPiece()" [disabled]="!fichierUpload">Uploader</button>
         <span *ngIf="uploadMessage" class="upload-msg">{{ uploadMessage }}</span>
       </div>
-
-      <!-- Ici vous pourriez lister les fichiers existants avec des liens de téléchargement -->
     </div>
   </div>
+
+
+
+
+  <!-- Modal de visualisation -->
+<div class="modal-overlay" *ngIf="modalVisible" (click)="fermerModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">{{ modalNomFichier }}</span>
+      <button class="modal-close" (click)="fermerModal()">✖</button>
+    </div>
+    <div class="modal-body">
+      <!-- Image -->
+      <div *ngIf="modalType === 'image'" class="image-view">
+        <img [src]="modalSafeUrl" alt="Aperçu" />
+      </div>
+      <!-- PDF -->
+      <div *ngIf="modalType === 'pdf'" class="pdf-view">
+        <iframe [src]="modalSafeUrl" frameborder="0"></iframe>
+      </div>
+      <!-- Autre -->
+      <div *ngIf="modalType === 'autre'" class="autre-view">
+        <p>Ce fichier ne peut pas être affiché directement.</p>
+        <a [href]="modalSafeUrl" download class="btn-download">Télécharger le fichier</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Version 1 Modal de visualisation des pièces 
+<div class="modal" *ngIf="modalVisible" (click)="fermerModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <span class="close" (click)="fermerModal()">&times;</span>
+    <div *ngIf="modalType === 'image'">
+      <img [src]="modalSafeUrl" alt="Aperçu" style="max-width:100%; max-height:80vh;" />
+    </div>
+    <div *ngIf="modalType === 'pdf'">
+      <iframe [src]="modalSafeUrl" style="width:100%; height:80vh; border:none;"></iframe>
+    </div>
+    <div *ngIf="modalType === 'autre'">
+      <p>Impossible de visualiser ce fichier. <a [href]="modalSafeUrl" download>Télécharger</a></p>
+    </div>
+  </div>
+</div>-->
+
+
 </div>

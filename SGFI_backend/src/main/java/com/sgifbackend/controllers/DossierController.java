@@ -3,15 +3,24 @@ package com.sgifbackend.controllers;
 import com.sgifbackend.models.Dossier;
 import com.sgifbackend.models.HistoriqueDossier;
 import com.sgifbackend.models.Statut;
+import com.sgifbackend.repositories.DossierRepository;
+import com.sgifbackend.services.BordereauService;
 import com.sgifbackend.services.DossierService;
+import com.sgifbackend.services.NotificationService;
+
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller — Dossiers SGFI
@@ -33,6 +42,10 @@ import java.util.Map;
 public class DossierController {
  
     private final DossierService service;
+    private final DossierRepository dossierRepo;          
+    private final NotificationService notificationService; 
+    private final BordereauService bordereauService;       
+
  
     // ── GET /api/dossiers — liste complète ───────────────────────────────────
     @GetMapping
@@ -117,7 +130,45 @@ public class DossierController {
     }	
 	
 	
-	
+    // Génération du borrder
+    @PostMapping("/bordereaux/envoi")
+    public ResponseEntity<byte[]> genererBordereauEnvoi(
+            @RequestBody Map<String, Object> payload) {
+        @SuppressWarnings("unchecked")
+        List<Integer> ids = (List<Integer>) payload.get("ids");
+        String referenceExterne = (String) payload.get("referenceExterne");
+        List<Dossier> dossiers = ids.stream()
+                .map(id -> service.findById(Long.valueOf(id)))
+                .collect(Collectors.toList());
+
+        // Mise à jour des statuts et référence externe
+        for (Dossier d : dossiers) {
+            d.setStatut(Statut.ENVOYE_AVOCAT);
+            if (referenceExterne != null && !referenceExterne.isBlank()) {
+                d.setReferenceExterne(referenceExterne);
+            }
+            dossierRepo.save(d);  // ou service.modifierStatut
+        }
+
+        // Création des notifications
+        for (Dossier d : dossiers) {
+            notificationService.creerNotification(
+                "Dossier " + d.getReferenceInterne() + " envoyé à l'avocat.",
+                "ENVOI_AVOCAT",
+                d.getIdDossier()
+            );
+        }
+
+        try {
+            byte[] pdf = bordereauService.genererBordereauMultiple(dossiers);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bordereau_envoi.pdf")
+                    .body(pdf);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur génération PDF", e);
+        }
+    }
 	
 	
 	
