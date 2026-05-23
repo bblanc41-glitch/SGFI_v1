@@ -244,4 +244,5 @@ public class DossierController {
     private String auteur(Authentication auth) {
         return (auth != null) ? auth.getName() : "système";
     }*/
+
 }

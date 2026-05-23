@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Dossier, DossierRecent, Stats, RapportImport, Notification,PieceJointe } from '../models/dossier';
-
+import { SuiviJuridique } from '../models/suivi-juridique';
 /**
  * DossierService — toutes les requêtes HTTP vers le backend Spring Boot.
  *
@@ -149,6 +149,16 @@ genererBordereauEnvoi(payload: { ids: number[], referenceExterne?: string }): Ob
 genererBordereau(id: number): Observable<Blob> {
   return this.http.get(`${this.api}/dossiers/${id}/bordereau`, { responseType: 'blob' });
 }/**/
+
+
+// Suivi juridique
+getSuiviJuridique(refInterne: string): Observable<SuiviJuridique> {
+  return this.http.get<SuiviJuridique>(`${this.api}/suivi/${refInterne}`);
+}
+
+updateSuiviJuridique(refInterne: string, suivi: Partial<SuiviJuridique>): Observable<SuiviJuridique> {
+  return this.http.post<SuiviJuridique>(`${this.api}/suivi/${refInterne}`, suivi);
+}
 
 
 

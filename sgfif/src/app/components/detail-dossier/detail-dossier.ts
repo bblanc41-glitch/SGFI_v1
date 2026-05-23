@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DossierService } from '../../services/dossier.service';
-import { Dossier, getBadgeClass, getLibelle, PieceJointe } from '../../models/dossier';
+import { Dossier, getBadgeClass, getLibelle, PieceJointe} from '../../models/dossier';
+import { SuiviJuridique } from '../../models/suivi-juridique';
 import { AuthService } from '../../services/auth.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
@@ -37,6 +38,18 @@ export class DetailDossier implements OnInit {
   modalBlobUrl: string | null = null;
   modalSafeUrl: SafeResourceUrl | null = null;
   modalType: 'image' | 'pdf' | 'autre' = 'autre';
+
+  //suiviJuridique: SuiviJuridique | null = null;
+ //suiviJuridique: SuiviJuridique = { referenceInterne: '' };
+  suiviJuridique: SuiviJuridique = {
+  referenceInterne: '',
+  referenceExterne: '',
+  typeAudience: undefined,
+  jugement: ''
+};
+
+
+ typeAudienceOptions = ['INSTANCE', 'APPEL', 'CASSATION'];
 
   formModif: FormGroup;
 
@@ -73,12 +86,14 @@ export class DetailDossier implements OnInit {
       next: (data) => {
         this.dossier = data;
         this.mettreAJourTransitions();   // met à jour la liste des transitions possibles
+        this.chargerSuiviJuridique();
         this.formModif.patchValue({
           beneficiaire: data.beneficiaire || '',
           cin: data.cin || '',
           telephone: data.telephone || '',
           observationJuridique: data.observationJuridique || ''
         });
+        
         this.chargement = false;
         this.cdr.detectChanges();
       },
@@ -88,6 +103,7 @@ export class DetailDossier implements OnInit {
         console.error(err);
       }
     });
+    
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -340,7 +356,21 @@ fermerModal(): void {
   });
 }
 
+  //METHODES DU SUIVI DE DOSSIER
+chargerSuiviJuridique(): void {
+  if (this.dossier?.referenceInterne) {
+    this.dossierService.getSuiviJuridique(this.dossier.referenceInterne).subscribe({
+      next: (data: SuiviJuridique) => this.suiviJuridique = data,
+      error: () => this.suiviJuridique = { referenceInterne: this.dossier!.referenceInterne }
+    });
+  }
+}
 
+mettreAJourSuivi(): void {
+  if (this.dossier?.referenceInterne && this.suiviJuridique) {
+    this.dossierService.updateSuiviJuridique(this.dossier.referenceInterne, this.suiviJuridique).subscribe();
+  }
+}
 
   getBadgeClass(statut?: string) { return getBadgeClass(statut); }
   getLibelle(statut?: string) { return getLibelle(statut); }

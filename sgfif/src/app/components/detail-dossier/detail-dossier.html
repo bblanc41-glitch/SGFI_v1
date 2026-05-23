@@ -53,6 +53,25 @@
         </div>
       </div>
 
+      <!-- Suivi juridique -->
+      <div class="suivi-section">
+        <h4>Suivi juridique</h4>
+        <div class="form-group">
+          <label>Référence externe (tribunal/avocat)</label>
+          <input [(ngModel)]="suiviJuridique.referenceExterne" (change)="mettreAJourSuivi()" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Type d'audience</label>
+          <select [(ngModel)]="suiviJuridique.typeAudience" (change)="mettreAJourSuivi()" class="form-control">
+            <option *ngFor="let t of typeAudienceOptions" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jugement</label>
+          <textarea [(ngModel)]="suiviJuridique.jugement" (change)="mettreAJourSuivi()" rows="3" class="form-control"></textarea>
+        </div>
+      </div>
+
       <!-- Liste des pièces jointes existantes -->
       <div *ngIf="pieces.length > 0">
         <h5>Pièces jointes</h5>

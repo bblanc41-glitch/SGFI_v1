@@ -26,9 +26,11 @@ public class Dossier {
     @Column(nullable = false)
     private String ip;                      // Identifiant Patient
 
-   
-    //////////// Informations patient (dupliquées pour accès rapide) 
+     //////////// Informations patient (dupliquées pour accès rapide) 
+	// Nouveaux champs issus du canevas
+	private String hopital;                 // Hôpital concerné (HME, HOS, etc.) 
     private String beneficiaire;
+    private String adresseVille;            // Adresse/Ville
     private String cin;
     private String telephone;
     
@@ -51,21 +53,40 @@ public class Dossier {
     @Column(nullable = false)
     private Statut statut = Statut.EN_ATTENTE_PRISE_EN_CHARGE;
 
-    /** Raison de cloture ou d'incomplete (obligatoire selon le statut) */
+    // Raison de cloture ou d'incomplete (obligatoire selon le statut)
     @Column(columnDefinition = "TEXT")
     private String motif;
 
     ////////// Rererences internes
     @Column(unique = true)
     private String referenceInterne;        // Ex : REF-JUR-2024-001
-
-    /* Nom du fichier bordereau PDF généré lors de l'envoi à l'avocat */
+    
+    // Ref pour suivi du dossier auprès de l'avocat On suppose que la reference est unique mais les numeros auprès des differentes juridiction sont =/=
+     @Column(name = "reference_externe", length = 50)
+    private String referenceExterne;
+    
+    // Nom du fichier bordereau PDF généré lors de l'envoi à l'avocat
     private String bordereau;
 
     //////////Suivi judiciaire
-    private String jugement;               // 1re instance / Appel / Cassation
-    private String dateAudience;           // Format libre (ex : 15/07/2024)
-
+    //private String jugement;               // 1re instance / Appel / Cassation
+    //private String dateAudience;           // Format libre (ex : 15/07/2024)
+    
+	private String sujetAffaire;            // Frais de traitement, Chèque sans provision, Faute médicale, Dde constat de décès, Autres
+	private String annee;                   // Année de l'affaire
+	private String typeAffaireJudiciaire;   // Civil, Administratif, Pénal, Autres
+	//private String refDossierAvocat;        // Référence dossier (donnée par l'avocat)
+	//private LocalDate dateReceptionAvocat;  // Date réception par l'avocat
+	//private String numDossierTribunal1ere;  // N° dossier au tribunal 1ère instance
+	//private String jugement1ereInstance;    // Jugement 1ère instance
+	//private String numDossierCourAppel;     // N° dossier à la Cour d'Appel
+	//private String jugementCourAppel;       // Jugement Cour d'Appel
+	//private String numDossierCourCassation; // N° dossier à la Cour de Cassation
+	//private String jugementCourCassation;   // Jugement Cour de Cassation
+	//private String paiementFraisAvocat;     // Paiement frais Avocat (oui/non, montant, etc.)
+	
+    
+    
     ////////// Observations 
     @Column(columnDefinition = "TEXT")
     private String observationJuridique;
@@ -77,9 +98,7 @@ public class Dossier {
     @UpdateTimestamp
     private LocalDateTime dateMiseAJour;
 
-    // Ref pour suivi du dossier auprès de l'avocat
-    @Column(name = "reference_externe", length = 50)
-    private String referenceExterne;
+	
     
     ////////// Relation vers les données brutes CCR
     /**
@@ -94,6 +113,7 @@ public class Dossier {
 	}, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)) // <-- LA LIGNE MAGIQUE ICI
 	@NotFound(action = NotFoundAction.IGNORE)   // ← AJOUTER CETTE LIGNE
 	private DossierImport infosOrigine;
+	
     /*@OneToOne
     @JoinColumns({
         @JoinColumn(name = "ip",            referencedColumnName = "ip",            insertable = false, updatable = false),

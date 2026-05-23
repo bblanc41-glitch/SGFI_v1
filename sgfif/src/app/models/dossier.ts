@@ -1,3 +1,39 @@
+
+//Dossier importe
+export interface DossierImport {
+  idDossier?:             number;
+  referenceInterne?:      string;
+  
+  ip:                     string;
+  beneficiaire?:          string;
+  cin?:                   string;
+  
+  // Soins
+  dateDebut:      string;
+  dateFin:        string;
+
+  // Facture
+  numeroFacture:  string;
+  montant:        number;
+  paiements:      number;
+  rap:            number;
+
+  // Relances
+  relance1?:      number;
+  dateRelance1?:  string;
+  relance2?:      number;
+  dateRelance2?:  string;
+
+  statut?:                string;
+  observationJuridique?:  string;
+  
+  // Workflow
+  dateCreation?:          string;
+  dateMiseAJour?:         string;
+}
+
+
+
 export interface Dossier {
   idDossier?:             number;
   referenceInterne?:      string;
@@ -38,38 +74,6 @@ export interface Dossier {
   dateMiseAJour?:         string;
 }
 
-//Dossier importe
-export interface DossierImport {
-  idDossier?:             number;
-  referenceInterne?:      string;
-  
-  ip:                     string;
-  beneficiaire?:          string;
-  cin?:                   string;
-  
-  // Soins
-  dateDebut:      string;
-  dateFin:        string;
-
-  // Facture
-  numeroFacture:  string;
-  montant:        number;
-  paiements:      number;
-  rap:            number;
-
-  // Relances
-  relance1?:      number;
-  dateRelance1?:  string;
-  relance2?:      number;
-  dateRelance2?:  string;
-
-  statut?:                string;
-  observationJuridique?:  string;
-  
-  // Workflow
-  dateCreation?:          string;
-  dateMiseAJour?:         string;
-}
 
 
 
@@ -164,7 +168,23 @@ export const STATUTS: { valeur: string; libelle: string; badge: string }[] = [
 ];
 
 
+// SUJET DE DOSSIER OBJET POUR TRAITEMENT
+export const SUJET: { valeur: string; libelle: string; badge: string }[] = [
+  { valeur: 'FRAIS_DE_TRAITEMENT',           libelle: 'Frais de traitement',     badge: 'bg-info text-dark'    },
+  { valeur: 'CHEQUE_SANS_PROVISION',         libelle: 'Chèque sans provision',   badge: 'bg-warning text-dark' },
+  { valeur: 'FAUTE_MEDICALE',                libelle: 'Faute médicale',          badge: 'bg-warning text-dark' },
+  { valeur: 'DEMANDE_DE_CONSTAT_DE_DECES',   libelle: 'Demande constat de décès',badge: 'bg-danger'            },
+  { valeur: 'AUTRE',                         libelle: 'autre',                   badge: 'bg-primary'           },
+];
 
+
+//TYPE AFFAIRE JUDICICIAIRE
+export const TYPE_AFFAIRE: { valeur: string; libelle: string; badge: string }[] = [
+  { valeur: 'CIVIL',           libelle: 'Civil',     badge: 'bg-info text-dark'    },
+  { valeur: 'ADMINISTRATIF',         libelle: 'Administratif',   badge: 'bg-warning text-dark' },
+  { valeur: 'PENAL',                libelle: 'Pénal',          badge: 'bg-warning text-dark' },
+  { valeur: 'AUTRE',                         libelle: 'autre',                   badge: 'bg-primary'           },
+];
 
 /** Retourne la classe Bootstrap badge correspondant à un statut */
 export function getBadgeClass(statut?: string): string {

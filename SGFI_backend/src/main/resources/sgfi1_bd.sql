@@ -101,7 +101,21 @@ CREATE TABLE IF NOT EXISTS dossiers (
 		    PRIMARY KEY (`id`)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;	    
 	    
-	    
+
+CREATE TABLE IF NOT EXISTS suivis_juridiques (
+    id_suivi BIGINT AUTO_INCREMENT PRIMARY KEY,
+    reference_interne VARCHAR(50) NOT NULL UNIQUE,
+    reference_externe VARCHAR(50),
+    type_audience ENUM('INSTANCE','APPEL','CASSATION'),
+    jugement TEXT,
+    date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_modification DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Supprimer les anciennes colonnes jugement et dateAudience de la table dossiers (si elles existent)
+ALTER TABLE dossiers DROP COLUMN IF EXISTS jugement;
+ALTER TABLE dossiers DROP COLUMN IF EXISTS date_audience;	    
+    
 	    
     
     /*

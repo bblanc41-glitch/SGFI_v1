@@ -269,3 +269,61 @@
   .rapport-grid  { grid-template-columns: 1fr; }
   .rapport-actions { flex-direction: column; }
 }
+
+
+.recap-section {
+  margin-top: 2rem;
+  border-top: 1px solid #e8edf5;
+  padding-top: 1.5rem;
+}
+.recap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.recap-card {
+  background: #f8faff;
+  border-radius: 10px;
+  padding: 1rem;
+  border: 1px solid #e0e8f8;
+}
+.recap-ref {
+  font-weight: 700;
+  color: #1565C0;
+  margin-bottom: 0.5rem;
+}
+.recap-info {
+  font-size: 0.85rem;
+  color: #2d3a52;
+  margin-bottom: 0.8rem;
+}
+.recap-info div {
+  margin-bottom: 0.2rem;
+}
+.recap-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.btn-sm {
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.75rem;
+  border: none;
+  cursor: pointer;
+}
+.btn-info {
+  background: #e1f5fe;
+  color: #0277bd;
+}
+.btn-info:hover {
+  background: #b3e5fc;
+}
+.btn-warning {
+  background: #fff8e1;
+  color: #b26500;
+}
+.btn-warning:hover {
+  background: #ffecb3;
+}

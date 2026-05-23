@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef  } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink,Router } from '@angular/router';
 import { DossierService } from '../../services/dossier.service';
 import { RapportImport } from '../../models/dossier';
 
@@ -22,7 +22,9 @@ export class Importation {
   rapport:      RapportImport | null = null;
   erreurServeur = '';
 
-  constructor(private dossierService: DossierService) {}
+  constructor(private dossierService: DossierService,
+              private router: Router,
+              private cdr: ChangeDetectorRef) {}
 
   onFichierSelectionne(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -61,6 +63,7 @@ export class Importation {
         this.chargement = false;
         // Réinitialise la sélection de fichier après succès
         this.fichierSelectionne = null;
+         this.cdr.detectChanges();
       },
       error: (err) => {
         this.chargement = false;
@@ -84,52 +87,3 @@ export class Importation {
     return !!this.rapport && this.rapport.importes > 0;
   }
 }
-
-/*Version 1
-
-import { Component } from '@angular/core';
-import { DossierService } from '../../services/dossier.service';
-import { CommonModule } from '@angular/common';
-
-@Component({
-  selector: 'app-importation',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './importation.html',
-  styleUrl: './importation.css',
-})
-export class Importation {
-  selectedFile: File | null = null;
-  isUploading: boolean = false; // Indicateur d'état
-
-  constructor(private dossierService: DossierService) {}
-
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
-  }
-
-  uploadFile() {
-    if (this.selectedFile) {
-      // on utilise FormData pour envoyer le fichier au Backend (de facon pro)
-      this.isUploading = true;
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-
-      // Appel réel au service
-      this.dossierService.importCcr(formData).subscribe({
-        next: (response) => {
-          alert('Importation réussie ! Les dossiers CCR ont été intégrés.');
-          this.isUploading = false;
-          this.selectedFile = null;
-        },
-        error: (err) => {
-          console.error('Erreur importation:', err);
-          alert('Erreur lors de l\'importation du fichier Excel.');
-          this.isUploading = false;
-        }
-      });
-    }else {
-      alert('Veuillez sélectionner un fichier Excel.');
-    }
-  }
-}*/
