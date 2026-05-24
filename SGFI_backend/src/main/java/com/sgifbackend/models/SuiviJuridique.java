@@ -7,32 +7,39 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.io.Serializable;
 
-@Entity
-@Table(name = "suivis_juridiques")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SuiviJuridique {
+@Entity
+@Table(name = "suivis_juridiques")
+@IdClass(SuiviJuridiqueId.class)
+public class SuiviJuridique implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idSuivi;
+    @Column(name = "reference_interne", nullable = false)
+    private String referenceInterne;  // référence du dossier
 
-    @Column(name = "reference_interne", unique = true, nullable = false)
-    private String referenceInterne;   // clé unique liée à Dossier
+    @Id
+    @Column(name = "reference_externe", nullable = false)
+    private String referenceExterne;  // numéro dossier tribunal
 
-    @Column(name = "reference_externe")
-    private String referenceExterne;   // référence tribunal/avocat variable suivant les juridictions( Intance, Appel ou Cassation)
-
+    @Id
     @Enumerated(EnumType.STRING)
-    @Column(name = "type_audience")
+    @Column(name = "type_audience", nullable = false)
     private TypeAudience typeAudience;
 
     @Column(columnDefinition = "TEXT")
     private String jugement;
+
+    @Column(name = "date_audience")
+    private LocalDate dateAudience;
 
     @CreationTimestamp
     @Column(name = "date_creation", updatable = false)

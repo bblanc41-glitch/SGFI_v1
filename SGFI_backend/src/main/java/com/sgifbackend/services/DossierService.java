@@ -222,7 +222,7 @@ public class DossierService {
      * */
     
     ////////SUIVI Juridique
-    public void updateSuiviJuridique(String referenceInterne, SuiviJuridique suiviData) {
+   /* public void updateSuiviJuridique(String referenceInterne, SuiviJuridique suiviData) {
         SuiviJuridique suivi = suiviService.getOrCreateByReference(referenceInterne);
         if (suiviData.getReferenceExterne() != null)
             suivi.setReferenceExterne(suiviData.getReferenceExterne());
@@ -232,6 +232,16 @@ public class DossierService {
             suivi.setJugement(suiviData.getJugement());
         suiviService.save(suivi);
     }
+   public void updateSuiviJuridique(String referenceInterne, SuiviJuridique suiviData) {
+        SuiviJuridique suivi = suiviService.getOrCreateByReference(referenceInterne);
+        if (suiviData.getReferenceExterne() != null)
+            suivi.setReferenceExterne(suiviData.getReferenceExterne());
+        if (suiviData.getTypeAudience() != null)
+            suivi.setTypeAudience(suiviData.getTypeAudience());
+        if (suiviData.getJugement() != null)
+            suivi.setJugement(suiviData.getJugement());
+        suiviService.save(suivi);
+    }*/ 
 
     
     

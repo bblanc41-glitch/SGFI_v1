@@ -1,7 +1,11 @@
 package com.sgifbackend.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
@@ -16,6 +20,9 @@ import java.util.List;
 @Entity
 @Table(name = "dossiers")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor 
 public class Dossier {
 
     @Id
