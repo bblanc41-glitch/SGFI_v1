@@ -43,11 +43,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     	
     	try {
     	    String token = extraireToken(request);
-
+    	   // logger.debug("Token extrait : {}", token != null ? "Présent" : "Absent");
     	    if (token != null && jwtUtil.isTokenValid(token)) {
     	        String username = jwtUtil.extractUsername(token);
     	        String role = jwtUtil.extractRole(token);
-
+    	        //logger.debug("Username extrait : {}, Role : {}", username, role);
     	        // On crée directement les droits à partir du token, ZÉRO requête SQL !
     	        List<SimpleGrantedAuthority> autorisations = List.of(new SimpleGrantedAuthority("ROLE_" + role));
     	        

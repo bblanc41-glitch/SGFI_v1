@@ -562,3 +562,39 @@ textarea.form-control {
   border-radius: 6px;
   text-decoration: none;
 }
+
+.suivi-section {
+  margin: 1.5rem 0;
+  border-top: 1px solid #e8edf5;
+  padding-top: 1rem;
+}
+.suivi-item {
+  background: #f8faff;
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+.suivi-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.suivi-form {
+  background: #f0f3f8;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+.suivi-form input, .suivi-form select, .suivi-form textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem;
+}
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}

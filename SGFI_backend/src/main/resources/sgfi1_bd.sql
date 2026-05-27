@@ -103,7 +103,6 @@ CREATE TABLE IF NOT EXISTS dossiers (
 	    
 
 CREATE TABLE IF NOT EXISTS suivis_juridiques (
-    id_suivi BIGINT AUTO_INCREMENT PRIMARY KEY,
     reference_interne VARCHAR(50) NOT NULL UNIQUE,
     reference_externe VARCHAR(50),
     type_audience ENUM('INSTANCE','APPEL','CASSATION'),
@@ -111,6 +110,8 @@ CREATE TABLE IF NOT EXISTS suivis_juridiques (
     date_creation DATETIME DEFAULT CURRENT_TIMESTAMP,
     date_modification DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+ALTER TABLE suivis_juridiques ADD PRIMARY KEY (reference_interne, reference_externe, type_audience);
 
 -- Supprimer les anciennes colonnes jugement et dateAudience de la table dossiers (si elles existent)
 ALTER TABLE dossiers DROP COLUMN IF EXISTS jugement;

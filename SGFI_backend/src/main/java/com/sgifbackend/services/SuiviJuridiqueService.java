@@ -44,34 +44,6 @@ public class SuiviJuridiqueService {
        repository.findByReferenceInterneAndTypeAudience(referenceInterne, type)
                .ifPresent(repository::delete);
    }
-   
-/*
-    // Récupère ou crée un suivi par référence interne et type d'audience
-    public SuiviJuridique getOrCreateByReferenceAndType(String referenceInterne, TypeAudience type) {
-        return repository.findByDossier_ReferenceInterneAndTypeAudience(referenceInterne, type)
-                .orElseGet(() -> {
-                    SuiviJuridique nouveau = SuiviJuridique.builder()
-                            .dossier(Dossier.builder().referenceInterne(referenceInterne).build())
-                            .typeAudience(type)
-                            .build();
-                    return repository.save(nouveau);
-                });
-    }
-
-    
-     public void deleteSuivi(Long suiviId) {
-        repository.deleteById(suiviId);
-    }
-    
-    // Nouvelle méthode getOrCreateByReference (alias)
-    public SuiviJuridique getOrCreateByReference(String referenceInterne) {
-        // Par défaut, on crée un suivi pour le type INSTANCE (ou autre selon votre besoin)
-        // Vous pouvez passer le type en paramètre si nécessaire
-        return getOrCreateByReferenceAndType(referenceInterne, TypeAudience.INSTANCE);
-    }
-
-    */
-    
     
     // Nouvelle méthode save (pour updateSuiviJuridique)
     public SuiviJuridique save(SuiviJuridique suivi) {

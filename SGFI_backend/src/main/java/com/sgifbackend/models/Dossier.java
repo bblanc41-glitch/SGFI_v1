@@ -65,7 +65,7 @@ public class Dossier {
     private String motif;
 
     ////////// Rererences internes
-    @Column(unique = true)
+    @Column(name = "reference_interne", unique = true)
     private String referenceInterne;        // Ex : REF-JUR-2024-001
     
     // Ref pour suivi du dossier auprès de l'avocat On suppose que la reference est unique mais les numeros auprès des differentes juridiction sont =/=

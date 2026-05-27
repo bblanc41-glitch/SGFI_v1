@@ -2,105 +2,35 @@
   <div class="detail-card">
     <div class="detail-header">
       <h2>Dossier #{{ dossier?.idDossier }}</h2>
-      <div>
-        <a routerLink="/liste-dossiers" class="btn-retour">← Retour à la liste</a>
-      </div>
+      <a routerLink="/liste-dossiers" class="btn-retour">← Retour à la liste</a>
     </div>
 
     <div *ngIf="chargement" class="loading-spinner">Chargement...</div>
     <div *ngIf="erreur" class="alert alert-danger">{{ erreur }}</div>
 
     <div *ngIf="dossier && !chargement">
-      <!-- Onglet consultation / édition -->
+      <!-- Actions : modifier -->
       <div class="action-bar">
         <button *ngIf="!modeEdition" class="btn-modifier" (click)="basculerEdition()">✏️ Modifier</button>
         <button *ngIf="modeEdition" class="btn-annuler" (click)="basculerEdition()">Annuler</button>
       </div>
 
-      <!-- Zone d'affichage en mode consultation -->
+      <!-- Mode consultation -->
       <div *ngIf="!modeEdition" class="infos-ligne">
-        <div class="info-group">
-          <label>IP Patient</label>
-          <span>{{ dossier.ip }}</span>
-        </div>
-        <div class="info-group">
-          <label>N° Facture</label>
-          <span>{{ dossier.numeroFacture }}</span>
-        </div>
-        <div class="info-group">
-          <label>Bénéficiaire</label>
-          <span>{{ dossier.beneficiaire || '—' }}</span>
-        </div>
-        <div class="info-group">
-          <label>CIN</label>
-          <span>{{ dossier.cin || '—' }}</span>
-        </div>
-        <div class="info-group">
-          <label>Téléphone</label>
-          <span>{{ dossier.telephone || '—' }}</span>
-        </div>
-        <div class="info-group">
-          <label>Référence interne</label>
-          <span>{{ dossier.referenceInterne || '—' }}</span>
-        </div>
+        <div class="info-group"><label>IP Patient</label><span>{{ dossier.ip }}</span></div>
+        <div class="info-group"><label>N° Facture</label><span>{{ dossier.numeroFacture }}</span></div>
+        <div class="info-group"><label>Bénéficiaire</label><span>{{ dossier.beneficiaire || '—' }}</span></div>
+        <div class="info-group"><label>CIN</label><span>{{ dossier.cin || '—' }}</span></div>
+        <div class="info-group"><label>Téléphone</label><span>{{ dossier.telephone || '—' }}</span></div>
+        <div class="info-group"><label>Référence interne</label><span>{{ dossier.referenceInterne || '—' }}</span></div>
         <div class="info-group">
           <label>Statut</label>
           <span class="badge" [ngClass]="getBadgeClass(dossier.statut)">{{ getLibelle(dossier.statut) }}</span>
         </div>
-        <div class="info-group">
-          <label>Observation juridique</label>
-          <p>{{ dossier.observationJuridique || '—' }}</p>
-        </div>
+        <div class="info-group"><label>Observation juridique</label><p>{{ dossier.observationJuridique || '—' }}</p></div>
       </div>
 
-      <!-- Suivi juridique -->
-      <div class="suivi-section">
-        <h4>Suivi juridique</h4>
-        <div class="form-group">
-          <label>Référence externe (tribunal/avocat)</label>
-          <input [(ngModel)]="suiviJuridique.referenceExterne" (change)="mettreAJourSuivi()" class="form-control" />
-        </div>
-        <div class="form-group">
-          <label>Type d'audience</label>
-          <select [(ngModel)]="suiviJuridique.typeAudience" (change)="mettreAJourSuivi()" class="form-control">
-            <option *ngFor="let t of typeAudienceOptions" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Jugement</label>
-          <textarea [(ngModel)]="suiviJuridique.jugement" (change)="mettreAJourSuivi()" rows="3" class="form-control"></textarea>
-        </div>
-      </div>
-
-      <!-- Liste des pièces jointes existantes -->
-      <div *ngIf="pieces.length > 0">
-        <h5>Pièces jointes</h5>
-        <table class="table-pieces">
-          <thead>
-            <tr>
-              <th>Nom du fichier</th>
-              <th>Taille</th>
-              <th>Date d'upload</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of pieces">
-              <td>{{ p.nomFichier }}</td>
-              <td>{{ (p.taille / 1024) | number:'1.0-0' }} Ko</td>
-              <td>{{ p.dateUpload | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <button class="btn-icon" (click)="voirPiece(p.cheminStockage, p.nomFichier)" title="Voir">👁️</button>
-                <button class="btn-icon" (click)="telechargerPiece(p.cheminStockage, p.nomFichier)" title="Télécharger">⬇️</button>
-                <button class="btn-icon" (click)="supprimerPiece(p.id)" title="Supprimer">🗑️</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div *ngIf="pieces.length === 0" class="no-pieces">Aucune pièce jointe pour ce dossier.</div>
-
-      <!-- Formulaire de modification -->
+      <!-- Mode édition -->
       <div *ngIf="modeEdition" class="form-edition">
         <div class="form-group">
           <label>Bénéficiaire</label>
@@ -121,23 +51,88 @@
         <button class="btn-enregistrer" (click)="enregistrerModifications()">Enregistrer</button>
       </div>
 
-      <!-- Workflow : changement de statut -->
+      <!-- ================= SUIVI JURIDIQUE ================= -->
+      <div class="suivi-section">
+        <h4>Suivi juridique</h4>
+        <!-- Bouton pour ajouter (toujours visible) -->
+        <button class="btn-add" (click)="afficherFormulaireAjout()">+ Ajouter un suivi</button>
+
+        <!-- Tableau des suivis existants -->
+        <div *ngIf="suivis.length === 0" class="no-suivi">Aucun suivi.</div>
+        <table class="table table-bordered" *ngIf="suivis.length > 0">
+          <thead>
+            <tr><th>Type</th><th>Référence externe</th><th>Date audience</th><th>Jugement</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of suivis">
+              <td><strong>{{ s.typeAudience }}</strong></td>
+              <td>{{ s.referenceExterne }}</td>
+              <td>{{ s.dateAudience | date:'dd/MM/yyyy' }}</td>
+              <td>{{ s.jugement || '—' }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" (click)="editerSuivi(s)">✏️</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="supprimerSuivi(s.typeAudience)">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Formulaire d'ajout/modification (affiché uniquement si showForm est true) -->
+     <div class="suivi-form" *ngIf="showForm">
+        <h5>{{ suiviEnEdition ? 'Modifier' : 'Ajouter' }} un suivi</h5>
+
+        <!-- Message d'erreur -->
+        <div *ngIf="erreurSuivi" class="alert alert-danger">{{ erreurSuivi }}</div>
+
+        <select [(ngModel)]="nouveauSuivi.typeAudience">
+          <option *ngFor="let t of typeAudienceOptions" [value]="t">{{ t }}</option>
+        </select>
+        <input [(ngModel)]="nouveauSuivi.referenceExterne" placeholder="Référence externe" />
+        <input type="date" [(ngModel)]="nouveauSuivi.dateAudience" />
+        <textarea [(ngModel)]="nouveauSuivi.jugement" placeholder="Jugement"></textarea>
+
+        <!-- Deux boutons distincts -->
+        <button *ngIf="!suiviEnEdition" (click)="ajouterSuivi()">Enregistrer (ajout)</button>
+        <button *ngIf="suiviEnEdition" (click)="modifierSuivi()">Mettre à jour</button>
+        <button (click)="annulerEdition()">Annuler</button>
+      </div>
+
+      <!-- Pièces jointes -->
+      <div *ngIf="pieces.length > 0">
+        <h5>Pièces jointes</h5>
+        <table class="table-pieces">
+          <thead><tr><th>Nom</th><th>Taille</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let p of pieces">
+              <td>{{ p.nomFichier }}</td>
+              <td>{{ (p.taille / 1024) | number:'1.0-0' }} Ko</td>
+              <td>{{ p.dateUpload | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <button class="btn-icon" (click)="voirPiece(p.cheminStockage, p.nomFichier)" title="Voir">👁️</button>
+                <button class="btn-icon" (click)="telechargerPiece(p.cheminStockage, p.nomFichier)" title="Télécharger">⬇️</button>
+                <button class="btn-icon" (click)="supprimerPiece(p.id)" title="Supprimer">🗑️</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="pieces.length === 0" class="no-pieces">Aucune pièce jointe pour ce dossier.</div>
+
+      <!-- Workflow changement de statut -->
       <div class="workflow-block" *ngIf="transitions.length > 0">
-        <label for="statutSelect">Changer le statut :</label>
-        <select id="statutSelect" [(ngModel)]="statutSelectionne" (change)="onStatutChange()">
+        <label>Changer le statut :</label>
+        <select [(ngModel)]="statutSelectionne" (change)="onStatutChange()">
           <option *ngFor="let s of transitions" [value]="s">{{ getLibelle(s) }}</option>
         </select>
-
-        <!-- Champ motif (visible seulement pour CLOTURE ou INCOMPLET) -->
         <div *ngIf="showMotifField" class="motif-group">
-          <label for="motif">Motif :</label>
-          <input type="text" id="motif" [(ngModel)]="motifRequis" placeholder="Motif obligatoire" class="form-control" />
+          <label>Motif :</label>
+          <input type="text" [(ngModel)]="motifRequis" placeholder="Motif obligatoire" class="form-control" />
         </div>
-
         <button class="btn-workflow" (click)="appliquerChangementStatut()">Appliquer</button>
       </div>
 
-      <!-- Upload de nouvelles pièces justificatives -->
+      <!-- Upload fichier -->
       <hr />
       <h4>Ajouter une pièce justificative</h4>
       <div class="upload-section">
@@ -145,52 +140,28 @@
         <button class="btn-upload" (click)="uploadPiece()" [disabled]="!fichierUpload">Uploader</button>
         <span *ngIf="uploadMessage" class="upload-msg">{{ uploadMessage }}</span>
       </div>
-    </div>
-  </div>
-
-
-
+    </div> <!-- fin *ngIf="dossier && !chargement" -->
+  </div> <!-- fin detail-card -->
 
   <!-- Modal de visualisation -->
-<div class="modal-overlay" *ngIf="modalVisible" (click)="fermerModal()">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    <div class="modal-header">
-      <span class="modal-title">{{ modalNomFichier }}</span>
-      <button class="modal-close" (click)="fermerModal()">✖</button>
-    </div>
-    <div class="modal-body">
-      <!-- Image -->
-      <div *ngIf="modalType === 'image'" class="image-view">
-        <img [src]="modalSafeUrl" alt="Aperçu" />
+  <div class="modal-overlay" *ngIf="modalVisible" (click)="fermerModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-title">{{ modalNomFichier }}</span>
+        <button class="modal-close" (click)="fermerModal()">✖</button>
       </div>
-      <!-- PDF -->
-      <div *ngIf="modalType === 'pdf'" class="pdf-view">
-        <iframe [src]="modalSafeUrl" frameborder="0"></iframe>
-      </div>
-      <!-- Autre -->
-      <div *ngIf="modalType === 'autre'" class="autre-view">
-        <p>Ce fichier ne peut pas être affiché directement.</p>
-        <a [href]="modalSafeUrl" download class="btn-download">Télécharger le fichier</a>
+      <div class="modal-body">
+        <div *ngIf="modalType === 'image'" class="image-view">
+          <img [src]="modalSafeUrl" alt="Aperçu" />
+        </div>
+        <div *ngIf="modalType === 'pdf'" class="pdf-view">
+          <iframe [src]="modalSafeUrl" frameborder="0"></iframe>
+        </div>
+        <div *ngIf="modalType === 'autre'" class="autre-view">
+          <p>Ce fichier ne peut pas être affiché directement.</p>
+          <a [href]="modalSafeUrl" download class="btn-download">Télécharger le fichier</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-  <!-- Version 1 Modal de visualisation des pièces 
-<div class="modal" *ngIf="modalVisible" (click)="fermerModal()">
-  <div class="modal-content" (click)="$event.stopPropagation()">
-    <span class="close" (click)="fermerModal()">&times;</span>
-    <div *ngIf="modalType === 'image'">
-      <img [src]="modalSafeUrl" alt="Aperçu" style="max-width:100%; max-height:80vh;" />
-    </div>
-    <div *ngIf="modalType === 'pdf'">
-      <iframe [src]="modalSafeUrl" style="width:100%; height:80vh; border:none;"></iframe>
-    </div>
-    <div *ngIf="modalType === 'autre'">
-      <p>Impossible de visualiser ce fichier. <a [href]="modalSafeUrl" download>Télécharger</a></p>
-    </div>
-  </div>
-</div>-->
-
-
 </div>
