@@ -91,37 +91,7 @@ export class DossierService {
     return this.http.delete<void>(`${this.api}/notifications/${id}`);
   }
 
-
-
-
-  /*
-  getById(id: number): Observable<Dossier> {
-    return this.http.get<Dossier>(`${this.api}/dossiers/${id}`);
-  }
-  */
-
-
-  /*
   
-  search(query: string): Observable<Dossier[]> {  
-    return this.http.get<Dossier[]>(`${this.api}/dossiers/search?query=${query}`);
-  }
-
-  uploadPieces(dossierId: number, files: File[]): Observable<any> {
-    const formData = new FormData();
-    files.forEach(f => formData.append('files', f));
-    return this.http.post(`${this.api}/dossiers/${dossierId}/pieces`, formData);
-  }
-
-  importExcel(formData: FormData): Observable<any> {
-    return this.http.post(`${this.api}/dossiers/import`, formData);
-  }
-
-  downloadTemplate(): Observable<Blob> {
-    return this.http.get(`${this.api}/dossiers/import/template`, { responseType: 'blob' });
-  }
-
-  */
 ///////////////Pieces justificatives
 getPieces(dossierId: number): Observable<PieceJointe[]> {
   return this.http.get<PieceJointe[]>(`${this.api}/dossiers/${dossierId}/pieces`);
@@ -151,18 +121,22 @@ genererBordereau(id: number): Observable<Blob> {
 }/**/
 
 
-// Suivi juridique (multi)
+// ///////////////////Suivi juridique avec son CRUD( cf post, get, put , delete)
 getSuivis(refInterne: string): Observable<SuiviJuridique[]> {
   return this.http.get<SuiviJuridique[]>(`${this.api}/dossiers/${refInterne}/suivis`);
 }
 
-addOrUpdateSuivi(refInterne: string, suivi: Partial<SuiviJuridique>): Observable<SuiviJuridique> {
+///
+createSuivi(refInterne: string, suivi: Partial<SuiviJuridique>): Observable<SuiviJuridique> {
   return this.http.post<SuiviJuridique>(`${this.api}/dossiers/${refInterne}/suivis`, suivi);
 }
 
-deleteSuivi(refInterne: string, typeAudience: string): Observable<void> {
-  return this.http.delete<void>(`${this.api}/dossiers/${refInterne}/suivis/${typeAudience}`);
+updateSuivi(refInterne: string, suivi: Partial<SuiviJuridique>): Observable<SuiviJuridique> {
+  return this.http.put<SuiviJuridique>(`${this.api}/dossiers/${refInterne}/suivis`, suivi);
 }
 
+deleteSuivi(refInterne: string, referenceExterne: string, typeAudience: string): Observable<void> {
+  return this.http.delete<void>(`${this.api}/dossiers/${refInterne}/suivis/${referenceExterne}/${typeAudience}`);
+}
 
 }

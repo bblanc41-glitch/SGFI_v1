@@ -161,7 +161,7 @@ ajouterSuivi(): void {
     return;
   }
 
-  this.dossierService.addOrUpdateSuivi(this.dossier.referenceInterne, suivi).subscribe({
+  this.dossierService.createSuivi(this.dossier.referenceInterne, suivi).subscribe({
     next: () => {
       this.chargerSuivis();
       this.annulerEdition();   // ferme le formulaire et réinitialise
@@ -181,21 +181,29 @@ ajouterSuivi(): void {
 modifierSuivi(): void {
   if (!this.dossier?.referenceInterne || !this.suiviEnEdition) return;
 
-  const suivi = this.nouveauSuivi;
+  const suivi = {
+    referenceInterne: this.dossier.referenceInterne,
+    referenceExterne: this.nouveauSuivi.referenceExterne,
+    typeAudience: this.nouveauSuivi.typeAudience,
+    jugement: this.nouveauSuivi.jugement,
+    dateAudience: this.nouveauSuivi.dateAudience
+  };
+
   if (!suivi.referenceExterne?.trim()) {
     this.erreurSuivi = 'La référence externe est obligatoire.';
     return;
   }
 
-  this.dossierService.addOrUpdateSuivi(this.dossier.referenceInterne, suivi).subscribe({
+  // IMPORTANT : Utiliser updateSuivi (PUT) et non addOrUpdateSuivi (POST)
+  this.dossierService.updateSuivi(this.dossier.referenceInterne, suivi).subscribe({
     next: () => {
       this.chargerSuivis();
-      this.annulerEdition();   // ferme le formulaire
+      this.annulerEdition();
       this.erreurSuivi = '';
       this.cdr.detectChanges();
     },
     error: (err) => {
-      console.error(err);
+      console.error('Erreur modification:', err);
       this.erreurSuivi = err.error?.message || 'Erreur lors de la modification.';
       this.cdr.detectChanges();
     }
@@ -217,41 +225,20 @@ annulerEdition(): void {
   this.erreurSuivi = '';
 }
 
-
-  ajouterOuModifierSuivi(): void {
-    if (!this.dossier?.referenceInterne) return;
-
-    const suivi = this.nouveauSuivi;
-    if (!suivi.referenceExterne.trim()) {
-      alert('La référence externe est obligatoire.');
-      return;
-    }
-
-    // Vérifier doublon (même typeAudience)
-    if (!this.suiviEnEdition && this.suivis.some(s => s.typeAudience === suivi.typeAudience)) {
-      alert(`Un suivi pour le type ${suivi.typeAudience} existe déjà.`);
-      return;
-    }
-
-    this.dossierService.addOrUpdateSuivi(this.dossier.referenceInterne, suivi).subscribe({
-      next: () => {
-        this.chargerSuivis();
-        this.annulerEdition();
-        this.cdr.detectChanges();
-      },
+    // Au lieu de passer seulement typeAudience, passer aussi referenceExterne
+supprimerSuivi(suivi: SuiviJuridique): void {
+  if (!this.dossier?.referenceInterne) return;
+  if (confirm(`Supprimer le suivi pour ${suivi.typeAudience} ?`)) {
+    this.dossierService.deleteSuivi(
+      this.dossier.referenceInterne, 
+      suivi.referenceExterne,  // ← AJOUTER la référence externe
+      suivi.typeAudience
+    ).subscribe({
+      next: () => this.chargerSuivis(),
       error: (err) => console.error(err)
     });
   }
-
-  supprimerSuivi(typeAudience: string): void {
-    if (!this.dossier?.referenceInterne) return;
-    if (confirm(`Supprimer le suivi pour ${typeAudience} ?`)) {
-      this.dossierService.deleteSuivi(this.dossier.referenceInterne, typeAudience).subscribe({
-        next: () => this.chargerSuivis(),
-        error: (err) => console.error(err)
-      });
-    }
-  }
+}
 
   // ---------- WORKFLOW ----------
   tousLesStatuts: string[] = [
