@@ -90,6 +90,7 @@ export interface HistoriqueDossier {
 }
 
 
+
 // ── INTERFACE DOSSIER RÉCENT ─────────────────────────────────────────────────
 // Projection allégée pour le tableau du dashboard — inclut le montant du CCR
 export interface DossierRecent {

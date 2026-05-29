@@ -49,6 +49,8 @@ public class Dossier {
     @Column(nullable = false)
     private String numeroFacture;           // Numero de facture
     private BigDecimal montant;
+    
+    @Column(name = "paiement")
     private BigDecimal paiement;
     
     @Column(name = "rap")
