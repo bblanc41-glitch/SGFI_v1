@@ -48,7 +48,7 @@
       </div>
       <div class="summary-card">
         <span class="label">Payé</span>
-        <span class="value text-success">{{ dossier.paiements | number }} MAD</span>
+        <span class="value text-success">{{ dossier.paiement | number }} MAD</span>
       </div>
       <div class="summary-card">
         <span class="label">Reste à payer</span>
@@ -111,7 +111,7 @@
               <div class="info-card">
                 <h4><i class="bi bi-receipt"></i> Facturation</h4>
                 <div class="info-row"><label>Montant total</label><span>{{ dossier.montant | number }} MAD</span></div>
-                <div class="info-row"><label>Paiements effectués</label><span>{{ dossier.paiements | number }} MAD</span></div>
+                <div class="info-row"><label>paiement effectués</label><span>{{ dossier.paiement | number }} MAD</span></div>
                 <div class="info-row"><label>Reste à payer (RAP)</label><span class="text-danger">{{ dossier.rap | number }} MAD</span></div>
               </div>
 
@@ -165,7 +165,7 @@
                 <h5 class="form-section-title"><i class="bi bi-receipt"></i> Facturation</h5>
                 <div class="form-row-2">
                   <div class="form-group"><label>Montant total (MAD)</label><input type="number" [(ngModel)]="modif.montant" class="form-control" (input)="onRapChange()" /></div>
-                  <div class="form-group"><label>Paiements effectués (MAD)</label><input type="number" [(ngModel)]="modif.paiements" class="form-control" (input)="onRapChange()" /></div>
+                  <div class="form-group"><label>paiement effectués (MAD)</label><input type="number" [(ngModel)]="modif.paiement" class="form-control" (input)="onRapChange()" /></div>
                   <div class="form-group"><label>Reste à payer (RAP)</label><input type="number" [(ngModel)]="modif.rap" class="form-control" readonly /></div>
                 </div>
               </div>

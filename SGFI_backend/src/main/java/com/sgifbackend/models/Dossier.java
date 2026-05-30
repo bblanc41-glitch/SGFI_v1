@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -95,7 +96,22 @@ public class Dossier {
 	//private String paiementFraisAvocat;     // Paiement frais Avocat (oui/non, montant, etc.)
 	
     
+	//Relances
+    @Column(name = "relance1")
+    private long relance1;
+
+    @Column(name = "dateRelance1")
+    private Date dateRelance1;
     
+    @Column(name = "relance2")
+    private long relance2;
+    
+    @Column(name = "dateRelance2")
+    private Date dateRelance2;
+    
+   /* @Column(name = "observation")
+    private String observation;*/
+	
     ////////// Observations 
     @Column(columnDefinition = "TEXT")
     private String observationJuridique;

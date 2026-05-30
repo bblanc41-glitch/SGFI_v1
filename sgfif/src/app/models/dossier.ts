@@ -15,7 +15,7 @@ export interface DossierImport {
   // Facture
   numeroFacture:  string;
   montant:        number;
-  paiements:      number;
+  paiement:      number;
   rap:            number;
 
   // Relances
@@ -51,7 +51,7 @@ export interface Dossier {
   pole:           string;
   numeroFacture:  string;
   montant:        number;
-  paiements:      number;
+  paiement:      number;
   rap:            number;
 
   // Relances

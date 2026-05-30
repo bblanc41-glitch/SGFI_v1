@@ -94,7 +94,7 @@ export class DetailDossier implements OnInit {
       dateDebut: [''],
       dateFin: [''],
       montant: [0],
-      paiements: [0],
+      paiement: [0],
       rap: [0],
       relance1: [''],
       dateRelance1: [''],
@@ -147,14 +147,14 @@ export class DetailDossier implements OnInit {
   calculerRap(): void {
     let montant = this.modif.montant || 0;
     if (montant < 0) { montant = -montant; }
-    let paiements = this.modif.paiements || 0;
-    if (paiements < 0) { paiements = -paiements; }
-    const resultat = (montant < paiements ? 0 : montant - paiements);
+    let paiement = this.modif.paiement || 0;
+    if (paiement < 0) { paiement = -paiement; }
+    const resultat = (montant < paiement ? 0 : montant - paiement);
     this.modif.rap = resultat;
     this.formModif.patchValue({ rap: resultat }, { emitEvent: false });
   }
 
-  // Méthode appelée quand montant ou paiements changent
+  // Méthode appelée quand montant ou paiement changent
   onRapChange(): void {
     this.calculerRap();
   }
@@ -177,7 +177,7 @@ export class DetailDossier implements OnInit {
           dateDebut: data.dateDebut || '',
           dateFin: data.dateFin || '',
           montant: data.montant || 0,
-          paiements: data.paiements || 0,
+          paiement: data.paiement || 0,
           rap: data.rap || 0,
           relance1: data.relance1 || '',
           dateRelance1: data.dateRelance1 || '',
@@ -377,7 +377,7 @@ export class DetailDossier implements OnInit {
         dateDebut: this.dossier.dateDebut || '',
         dateFin: this.dossier.dateFin || '',
         montant: this.dossier.montant || 0,
-        paiements: this.dossier.paiements || 0,
+        paiement: this.dossier.paiement || 0,
         rap: this.dossier.rap || 0,
         relance1: this.dossier.relance1 || '',
         dateRelance1: this.dossier.dateRelance1 || '',
@@ -404,7 +404,7 @@ export class DetailDossier implements OnInit {
       dateDebut: this.modif.dateDebut,
       dateFin: this.modif.dateFin,
       montant: this.modif.montant,
-      paiements: this.modif.paiements,
+      paiement: this.modif.paiement,
       rap: this.modif.rap,
       relance1: this.modif.relance1,
       dateRelance1: this.modif.dateRelance1,
