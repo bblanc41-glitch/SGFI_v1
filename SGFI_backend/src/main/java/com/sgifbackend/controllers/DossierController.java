@@ -129,8 +129,21 @@ public class DossierController {
         return (auth != null) ? auth.getName() : "système";
     }	
 	
+    @PostMapping("/bordereaux/envoi")
+    public ResponseEntity<byte[]> genererBordereauEnvoi(
+            @RequestBody Map<String, Object> payload) {
+        try {
+            byte[] pdf = bordereauService.genererBordereauMultiple(payload);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=bordereau_envoi.pdf")
+                    .body(pdf);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur génération PDF", e);
+        }
+    }
 	
-    // Génération du borrder
+    /* Génération du borrder
     @PostMapping("/bordereaux/envoi")
     public ResponseEntity<byte[]> genererBordereauEnvoi(
             @RequestBody Map<String, Object> payload) {
@@ -168,7 +181,7 @@ public class DossierController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur génération PDF", e);
         }
-    }
+    }*/
 	
 	
 	

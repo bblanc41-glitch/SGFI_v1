@@ -97,6 +97,19 @@ public class Dossier {
 	
     
 	//Relances
+	@Column(name = "relance1")
+	private Long relance1;
+
+	@Column(name = "dateRelance1")
+	private Date dateRelance1;
+
+	@Column(name = "relance2")
+	private Long relance2;
+
+	@Column(name = "dateRelance2")
+	private Date dateRelance2;
+	
+	/*Relances
     @Column(name = "relance1")
     private long relance1;
 

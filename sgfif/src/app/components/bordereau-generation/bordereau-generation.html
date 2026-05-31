@@ -5,50 +5,136 @@
       <a routerLink="/dashboard" class="btn-retour">← Retour</a>
     </div>
 
-    <div class="filtre-section">
-      <input type="text" [(ngModel)]="recherche" (input)="filtrer()" placeholder="Rechercher par IP, bénéficiaire, référence..." class="form-control" />
+    <!-- Sélection des dossiers -->
+    <div class="selection-section">
+      <h3><i class="bi bi-folder2-open"></i> 1. Sélection des dossiers</h3>
+      <div class="filtre-section">
+        <input type="text" [(ngModel)]="recherche" (input)="filtrer()" placeholder="Rechercher par IP, bénéficiaire, référence..." class="form-control" />
+      </div>
+
+      <div *ngIf="chargement" class="loading-spinner">Chargement...</div>
+
+      <div *ngIf="!chargement && dossiersFiltres.length === 0" class="no-data">
+        Aucun dossier disponible.
+      </div>
+
+      <div class="table-wrapper" *ngIf="!chargement && dossiersFiltres.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" (change)="toggleAll($event)" /></th>
+              <th>Référence interne</th>
+              <th>IP</th>
+              <th>Bénéficiaire</th>
+              <th>N° Facture</th>
+              <th>RAP (DH)</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of dossiersFiltres">
+              <td><input type="checkbox" (change)="toggleSelection(d, $event)" [checked]="selectionnes.has(d.idDossier!)" /></td>
+              <td class="ref">{{ d.referenceInterne }}</td>
+              <td>{{ d.ip }}</td>
+              <td>{{ d.beneficiaire }}</td>
+              <td>{{ d.numeroFacture }}</td>
+              <td class="amount">{{ d.rap | number }} DH</td>
+              <td><span class="badge">{{ d.statut }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="ref-section">
-      <label>Référence avocat / tribunal (optionnelle) :</label>
-      <input type="text" [(ngModel)]="referenceExterne" placeholder="Ex: REF-TRIB-2025-001" class="form-control" />
-      <small>Cette référence sera ajoutée à tous les dossiers sélectionnés.</small>
+    <!-- Informations du bordereau -->
+    <div class="info-section" *ngIf="selectionnes.size > 0">
+      <h3><i class="bi bi-info-circle"></i> 2. Informations du bordereau</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Destinataire (Avocat) *</label>
+          <input type="text" [(ngModel)]="destinataire" placeholder="Ex: Maître Didier TOBALY" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Cours concernée *</label>
+          <select [(ngModel)]="cour" class="form-control">
+            <option *ngFor="let c of cours" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Adresse *</label>
+          <input type="text" [(ngModel)]="adresse" placeholder="Ex: 4 Rue Abbas MPAS.SAADI" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Ville *</label>
+          <select [(ngModel)]="ville" class="form-control">
+            <option value="">Sélectionner une ville</option>
+            <option *ngFor="let v of villes" [value]="v">{{ v }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Désignations -->
+      <div class="designations-section">
+        <h4><i class="bi bi-list-check"></i> 3. Désignations</h4>
+        
+        <table class="designations-table">
+          <thead>
+            <tr><th>Désignation</th><th>Quantité</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of designations; let i = index">
+              <td class="designation-nom">{{ d.nom }}</td>
+              <td class="designation-qte">
+                <input type="number" [(ngModel)]="d.quantite" min="1" class="qte-input" />
+              </td>
+              <td class="designation-actions">
+                <button *ngIf="d.editable" class="btn-icon delete" (click)="supprimerDesignation(i)" title="Supprimer">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="add-designation">
+          <input type="text" [(ngModel)]="nouvelleDesignation" placeholder="Nouvelle désignation..." class="form-control" />
+          <input type="number" [(ngModel)]="nouvelleQuantite" min="1" class="qte-input" />
+          <button class="btn-add" (click)="ajouterDesignation()" [disabled]="!nouvelleDesignation.trim()">
+            <i class="bi bi-plus-lg"></i> Ajouter
+          </button>
+        </div>
+      </div>
+
+      <!-- Observation -->
+      <div class="observation-section">
+        <label>Observation</label>
+        <textarea [(ngModel)]="observation" rows="3" class="form-control" placeholder="Observations éventuelles..."></textarea>
+      </div>
+
+      <!-- Dossiers sélectionnés récapitulatifs -->
+      <div class="recap-dossiers">
+        <h4><i class="bi bi-files"></i> Dossiers sélectionnés ({{ selectionnes.size }})</h4>
+        <div class="recap-list">
+          <span class="recap-badge" *ngFor="let id of selectionnes">
+            {{ getDossiersSelectionnes().find(d => d.idDossier === id)?.referenceInterne }}
+          </span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-generer" (click)="genererBordereau()">
+          <i class="bi bi-file-pdf-fill"></i> Générer le bordereau ({{ selectionnes.size }} dossier(s))
+        </button>
+      </div>
     </div>
 
-    <div *ngIf="chargement" class="loading-spinner">Chargement...</div>
-
-    <!-- Message si aucun dossier -->
-    <div *ngIf="!chargement && dossiersFiltres.length === 0" class="no-data">
-      Aucun dossier disponible.
-    </div>
-
-    <table class="data-table" *ngIf="!chargement && dossiersFiltres.length > 0">
-      <thead>
-        <tr>
-          <th><input type="checkbox" (change)="toggleAll($event)" /></th>
-          <th>ID</th>
-          <th>Référence interne</th>
-          <th>IP</th>
-          <th>Bénéficiaire</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let d of dossiersFiltres">
-          <td><input type="checkbox" (change)="toggleSelection(d, $event)" [checked]="selectionnes.has(d.idDossier!)" /></td>
-          <td>{{ d.idDossier }}</td>
-          <td class="ref">{{ d.referenceInterne }}</td>
-          <td>{{ d.ip }}</td>
-          <td>{{ d.beneficiaire }}</td>
-          <td><span class="badge">{{ d.statut }}</span></td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="actions">
-      <button class="btn-generer" (click)="genererBordereau()" [disabled]="selectionnes.size === 0">
-        📄 Générer le bordereau ({{ selectionnes.size }} dossier(s))
-      </button>
+    <div class="info-message" *ngIf="selectionnes.size === 0 && !chargement">
+      <i class="bi bi-info-circle"></i>
+      Veuillez sélectionner au moins un dossier pour générer un bordereau.
     </div>
   </div>
 </div>

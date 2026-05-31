@@ -17,12 +17,41 @@ export class BordereauGeneration implements OnInit {
   dossiersFiltres: Dossier[] = [];
   recherche: string = '';
   selectionnes: Set<number> = new Set();
-  referenceExterne: string = '';
   chargement = true;
+
+  // Informations du bordereau
+  destinataire: string = '';
+  cour: string = 'INSTANCE';
+  adresse: string = '';
+  ville: string = '';
+  
+  observation: string = '';
+
+  // Désignations par défaut
+  designations: Designation[] = [
+    { nom: 'Recouvrement de l\'ordre de recette', quantite: 1, editable: false },
+    { nom: 'Copies des lettres envoyées à l\'intéressé(e) pour régularisation de la situation administrative', quantite: 1, editable: false },
+    { nom: 'Copie CNIE de l\'intéressé(e)', quantite: 1, editable: false }
+  ];
+
+  // Nouvelle désignation à ajouter
+  nouvelleDesignation: string = '';
+  nouvelleQuantite: number = 1;
+
+  // Liste des villes du Maroc
+  villes: string[] = [
+    'Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir', 'Tanger', 'Meknès',
+    'Oujda', 'Kénitra', 'Tétouan', 'Safi', 'El Jadida', 'Nador', 'Settat',
+    'Khouribga', 'Béni Mellal', 'Laâyoune', 'Taza', 'Guelmim', 'Berrechid',
+    'Temara', 'Khemisset', 'Mohammédia', 'Ouarzazate', 'Errachidia', 'Tiznit',
+    'Essaouira', 'Larache', 'Chefchaouen', 'Al Hoceïma', 'Dakhla', 'Smara'
+  ];
+
+  cours: string[] = ['INSTANCE', 'APPEL', 'CASSATION'];
 
   constructor(
     private dossierService: DossierService,
-    private cdr: ChangeDetectorRef   // ← injecté
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,7 +60,7 @@ export class BordereauGeneration implements OnInit {
         this.dossiers = data;
         this.dossiersFiltres = data;
         this.chargement = false;
-        this.cdr.detectChanges();   // ← force l’affichage
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erreur chargement dossiers', err);
@@ -52,7 +81,6 @@ export class BordereauGeneration implements OnInit {
         d.referenceInterne?.toLowerCase().includes(t)
       );
     }
-    // Force la mise à jour après filtrage
     this.cdr.detectChanges();
   }
 
@@ -72,29 +100,92 @@ export class BordereauGeneration implements OnInit {
     }
   }
 
+  ajouterDesignation(): void {
+    if (this.nouvelleDesignation.trim()) {
+      this.designations.push({
+        nom: this.nouvelleDesignation.trim(),
+        quantite: this.nouvelleQuantite,
+        editable: true
+      });
+      this.nouvelleDesignation = '';
+      this.nouvelleQuantite = 1;
+    }
+  }
+
+  supprimerDesignation(index: number): void {
+    this.designations.splice(index, 1);
+  }
+
+  getDossiersSelectionnes(): Dossier[] {
+    return this.dossiers.filter(d => this.selectionnes.has(d.idDossier!));
+  }
+
   genererBordereau(): void {
     if (this.selectionnes.size === 0) {
       alert('Veuillez sélectionner au moins un dossier.');
       return;
     }
+
+    // Validation des champs obligatoires
+    if (!this.destinataire.trim()) {
+      alert('Veuillez renseigner le nom du destinataire (avocat).');
+      return;
+    }
+    if (!this.adresse.trim()) {
+      alert('Veuillez renseigner l\'adresse.');
+      return;
+    }
+    if (!this.ville) {
+      alert('Veuillez sélectionner la ville.');
+      return;
+    }
+
+    const dossiersSelectionnes = this.getDossiersSelectionnes();
     const ids = Array.from(this.selectionnes);
-    const payload = { ids, referenceExterne: this.referenceExterne };
+
+    // Construction du payload
+    const payload = {
+      ids: ids,
+      destinataire: this.destinataire,
+      cour: this.cour,
+      adresse: this.adresse,
+      ville: this.ville,
+      observation: this.observation,
+      designations: this.designations,
+      dossiersDetails: dossiersSelectionnes.map(d => ({
+        referenceInterne: d.referenceInterne,
+        ip: d.ip,
+        beneficiaire: d.beneficiaire,
+        cin: d.cin,
+        numeroFacture: d.numeroFacture,
+        montant: d.montant,
+        rap: d.rap
+      }))
+    };
+
     this.dossierService.genererBordereauEnvoi(payload).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'bordereau_envoi.pdf';
+        a.download = `bordereau_envoi_${new Date().toISOString().slice(0,19)}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
-        alert('Bordereau généré. Les dossiers ont été marqués "Envoyé à l\'avocat".');
-        // Recharger la liste
-        this.ngOnInit();
+        alert('Bordereau généré avec succès.');
+        // Réinitialiser la sélection
+        this.selectionnes.clear();
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         console.error(err);
-        alert('Erreur lors de la génération.');
+        alert('Erreur lors de la génération du bordereau.');
       }
     });
   }
+}
+
+interface Designation {
+  nom: string;
+  quantite: number;
+  editable: boolean;
 }
