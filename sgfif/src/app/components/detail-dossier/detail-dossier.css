@@ -952,3 +952,133 @@ textarea.form-control {
     align-items: flex-start;
   }
 }
+
+
+/* ==================== BORDEREAU FORM ==================== */
+.bordereau-action {
+  margin-bottom: 1rem;
+  text-align: right;
+}
+
+.btn-generer-bordereau {
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #198754, #146c43);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s;
+}
+
+.btn-generer-bordereau:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+.bordereau-form-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+
+.bordereau-form-container {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+}
+
+.bordereau-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #f8faff;
+  border-bottom: 1px solid #e0e8f0;
+}
+
+.bordereau-form-header h4 {
+  margin: 0;
+  color: #1a2236;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bordereau-form-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.designations-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.designations-table th,
+.designations-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e8edf5;
+}
+
+.designations-table th {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #6b7a99;
+}
+
+.qte-input {
+  width: 70px;
+  padding: 0.3rem;
+  border: 1px solid #c8d0e0;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.add-designation {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.recap-dossier {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8faff;
+  border-radius: 8px;
+}
+
+.recap-dossier span {
+  font-size: 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8edf5;
+}

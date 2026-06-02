@@ -249,6 +249,110 @@
 
           <!-- Onglet Pièces jointes -->
           <div *ngIf="activeTab === 'pieces'" class="tab-pane">
+            <!-- Bouton Générer bordereau (visible si statut VALIDE_POUR_TRANSMISSION) -->
+            <div class="bordereau-action" *ngIf="dossier.statut === 'VALIDE_POUR_TRANSMISSION'">
+               <button class="btn-generer-bordereau" (click)="afficherFormulaireBordereau()">
+                <i class="bi bi-file-pdf-fill"></i> Générer un bordereau pour ce dossier
+              </button>
+            </div>
+            
+            <!-- Message si statut non valide -->
+            <div class="alert alert-warning" *ngIf="dossier.statut !== 'VALIDE_POUR_TRANSMISSION'">
+              <i class="bi bi-info-circle"></i>
+              Seuls les dossiers ayant le statut <strong>"Validé pour transmission"</strong> peuvent générer un bordereau d'envoi à l'avocat.
+            </div>
+
+            <!-- Formulaire de génération de bordereau -->
+            <div class="bordereau-form-modal" *ngIf="showBordereauForm">
+              <div class="bordereau-form-container">
+                <div class="bordereau-form-header">
+                  <h4><i class="bi bi-file-pdf-fill"></i> Générer un bordereau pour le dossier {{ dossier.referenceInterne }}</h4>
+                  <button class="close-btn" (click)="fermerFormulaireBordereau()">×</button>
+                </div>
+                
+                <div class="bordereau-form-body">
+                  <!-- Message de succès/erreur -->
+                  <div *ngIf="bordereauGenerationMessage" class="alert" [class.alert-success]="bordereauGenerationSuccess" [class.alert-danger]="!bordereauGenerationSuccess">
+                    {{ bordereauGenerationMessage }}
+                  </div>
+
+                  <!-- Informations destinataire -->
+                  <div class="form-section">
+                    <h5><i class="bi bi-person"></i> Destinataire</h5>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Destinataire (Avocat) *</label>
+                        <input type="text" [(ngModel)]="bordereauDestinataire" class="form-control" placeholder="Ex: Maître Didier TOBALY" />
+                      </div>
+                      <div class="form-group">
+                        <label>Cours concernée *</label>
+                        <select [(ngModel)]="bordereauCour" class="form-control">
+                          <option *ngFor="let c of cours" [value]="c">{{ c }}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label>Adresse *</label>
+                        <input type="text" [(ngModel)]="bordereauAdresse" class="form-control" placeholder="Ex: 4 Rue Abbas MPAS.SAADI" />
+                      </div>
+                      <div class="form-group">
+                        <label>Ville *</label>
+                        <select [(ngModel)]="bordereauVille" class="form-control">
+                          <option value="">Sélectionner une ville</option>
+                          <option *ngFor="let v of villes" [value]="v">{{ v }}</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Désignations -->
+                  <div class="form-section">
+                    <h5><i class="bi bi-list-check"></i> Désignations</h5>
+                    <table class="designations-table">
+                      <thead>
+                        <tr><th>Désignation</th><th>Quantité</th><th>Actions</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let d of bordereauDesignations; let i = index">
+                          <td>{{ d.nom }}</td>
+                          <td><input type="number" [(ngModel)]="d.quantite" min="1" class="qte-input" /></td>
+                          <td><button *ngIf="d.editable" class="btn-icon delete" (click)="supprimerDesignationBordereau(i)"><i class="bi bi-trash"></i></button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="add-designation">
+                      <input type="text" [(ngModel)]="nouvelleDesignation" placeholder="Nouvelle désignation..." class="form-control" />
+                      <input type="number" [(ngModel)]="nouvelleQuantite" min="1" class="qte-input" />
+                      <button class="btn-add" (click)="ajouterDesignationBordereau()"><i class="bi bi-plus-lg"></i> Ajouter</button>
+                    </div>
+                  </div>
+
+                  <!-- Observation -->
+                  <div class="form-section">
+                    <h5><i class="bi bi-chat"></i> Observation</h5>
+                    <textarea [(ngModel)]="bordereauObservation" rows="3" class="form-control" placeholder="Observations éventuelles..."></textarea>
+                  </div>
+
+                  <!-- Récap utilisateur -->
+                  <div class="form-section">
+                    <h5><i class="bi bi-info-circle"></i> Informations du dossier</h5>
+                    <div class="recap-dossier">
+                      <span><strong>Référence:</strong> {{ dossier.referenceInterne }}</span>
+                      <span><strong>IP:</strong> {{ dossier.ip }}</span>
+                      <span><strong>Bénéficiaire:</strong> {{ dossier.beneficiaire }}</span>
+                      <span><strong>RAP:</strong> {{ dossier.rap | number }} DH</span>
+                    </div>
+                  </div>
+
+                  <div class="form-actions">
+                    <button class="btn-secondary" (click)="fermerFormulaireBordereau()">Annuler</button>
+                    <button class="btn-primary" (click)="genererBordereauPourDossier()"><i class="bi bi-file-pdf-fill"></i> Générer le bordereau</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="upload-section">
               <h4><i class="bi bi-cloud-upload"></i> Ajouter une pièce</h4>
               <div class="upload-area" (dragover)="$event.preventDefault()" (drop)="onFileDrop($event)">

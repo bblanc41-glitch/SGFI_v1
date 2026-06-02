@@ -58,7 +58,7 @@ export class DetailDossier implements OnInit {
   
   // Formulaire de modification avec tous les champs
   formModif: FormGroup;
-  modif: any = {}; // Objet temporaire pour la modification
+  modif: any = {};
 
   // Ordre des statuts pour la timeline
   tousLesStatuts: string[] = [
@@ -76,6 +76,33 @@ export class DetailDossier implements OnInit {
     'Hôpital Omar Drissi'
   ];
 
+  // ==================== PROPRIÉTÉS POUR LE BORDEREAU ====================
+  showBordereauForm: boolean = false;
+  bordereauDestinataire: string = '';
+  bordereauCour: string = 'INSTANCE';
+  bordereauAdresse: string = '';
+  bordereauVille: string = '';
+  bordereauObservation: string = '';
+  bordereauDesignations: any[] = [
+    { nom: 'Copies des lettres envoyées à l\'intéressé(e) pour régularisation de la situation administrative', quantite: 1, editable: false },
+    { nom: 'Copie CNIE de l\'intéressé(e)', quantite: 1, editable: false }
+  ];
+  nouvelleDesignation: string = '';
+  nouvelleQuantite: number = 1;
+  bordereauGenerationMessage: string = '';
+  bordereauGenerationSuccess: boolean = false;
+
+  // Liste des villes
+  villes: string[] = [
+    'Casablanca', 'Rabat', 'Fès', 'Marrakech', 'Agadir', 'Tanger', 'Meknès',
+    'Oujda', 'Kénitra', 'Tétouan', 'Safi', 'El Jadida', 'Nador', 'Settat',
+    'Khouribga', 'Béni Mellal', 'Laâyoune', 'Taza', 'Guelmim', 'Berrechid',
+    'Temara', 'Khemisset', 'Mohammédia', 'Ouarzazate', 'Errachidia', 'Tiznit',
+    'Essaouira', 'Larache', 'Chefchaouen', 'Al Hoceïma', 'Dakhla', 'Smara'
+  ];
+
+  cours: string[] = ['INSTANCE', 'APPEL', 'CASSATION'];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -85,7 +112,6 @@ export class DetailDossier implements OnInit {
     private cdr: ChangeDetectorRef,
     private sanitizer: DomSanitizer
   ) {
-    // Formulaire avec tous les champs modifiables
     this.formModif = this.fb.group({
       beneficiaire: [''],
       cin: [''],
@@ -103,7 +129,6 @@ export class DetailDossier implements OnInit {
       observationJuridique: ['']
     });
     
-    // Initialiser l'objet modif
     this.modif = this.formModif.value;
   }
 
@@ -143,7 +168,6 @@ export class DetailDossier implements OnInit {
     }
   }
 
-  // Calcul du RAP - version améliorée inspirée de saisie-dossier
   calculerRap(): void {
     let montant = this.modif.montant || 0;
     if (montant < 0) { montant = -montant; }
@@ -154,7 +178,6 @@ export class DetailDossier implements OnInit {
     this.formModif.patchValue({ rap: resultat }, { emitEvent: false });
   }
 
-  // Méthode appelée quand montant ou paiement changent
   onRapChange(): void {
     this.calculerRap();
   }
@@ -168,7 +191,6 @@ export class DetailDossier implements OnInit {
         }
         this.mettreAJourTransitions();
         
-        // Remplir l'objet modif avec toutes les données
         this.modif = {
           beneficiaire: data.beneficiaire || '',
           cin: data.cin || '',
@@ -186,9 +208,7 @@ export class DetailDossier implements OnInit {
           observationJuridique: data.observationJuridique || ''
         };
         
-        // Mettre à jour le formulaire
         this.formModif.patchValue(this.modif);
-        
         this.chargement = false;
         this.cdr.detectChanges();
       },
@@ -243,18 +263,15 @@ export class DetailDossier implements OnInit {
 
   ajouterSuivi(): void {
     if (!this.dossier?.referenceInterne) return;
-
     const suivi = this.nouveauSuivi;
     if (!suivi.referenceExterne?.trim()) {
       this.erreurSuivi = 'La référence externe est obligatoire.';
       return;
     }
-
     if (this.suivis.some(s => s.typeAudience === suivi.typeAudience)) {
       this.erreurSuivi = `Un suivi pour le type ${suivi.typeAudience} existe déjà.`;
       return;
     }
-
     this.dossierService.createSuivi(this.dossier.referenceInterne, suivi).subscribe({
       next: () => {
         this.chargerSuivis();
@@ -272,7 +289,6 @@ export class DetailDossier implements OnInit {
 
   modifierSuivi(): void {
     if (!this.dossier?.referenceInterne || !this.suiviEnEdition) return;
-
     const suivi = {
       referenceInterne: this.dossier.referenceInterne,
       referenceExterne: this.nouveauSuivi.referenceExterne,
@@ -280,12 +296,10 @@ export class DetailDossier implements OnInit {
       jugement: this.nouveauSuivi.jugement,
       dateAudience: this.nouveauSuivi.dateAudience
     };
-
     if (!suivi.referenceExterne?.trim()) {
       this.erreurSuivi = 'La référence externe est obligatoire.';
       return;
     }
-
     this.dossierService.updateSuivi(this.dossier.referenceInterne, suivi).subscribe({
       next: () => {
         this.chargerSuivis();
@@ -368,7 +382,6 @@ export class DetailDossier implements OnInit {
   basculerEdition(): void {
     this.modeEdition = !this.modeEdition;
     if (!this.modeEdition && this.dossier) {
-      // Réinitialiser l'objet modif avec les données actuelles
       this.modif = {
         beneficiaire: this.dossier.beneficiaire || '',
         cin: this.dossier.cin || '',
@@ -391,11 +404,7 @@ export class DetailDossier implements OnInit {
 
   enregistrerModifications(): void {
     if (!this.dossier) return;
-    
-    // Calculer le RAP une dernière fois
     this.calculerRap();
-    
-    // Préparer les données à envoyer
     const updatedData = {
       beneficiaire: this.modif.beneficiaire,
       cin: this.modif.cin,
@@ -412,7 +421,6 @@ export class DetailDossier implements OnInit {
       dateRelance2: this.modif.dateRelance2,
       observationJuridique: this.modif.observationJuridique
     };
-
     this.dossierService.update(this.dossierId, updatedData).subscribe({
       next: (updated: Dossier) => {
         this.dossier = updated;
@@ -580,5 +588,112 @@ export class DetailDossier implements OnInit {
   truncate(text: string, limit: number): string {
     if (!text) return '';
     return text.length > limit ? text.substring(0, limit) + '...' : text;
+  }
+
+  // ==================== MÉTHODES POUR LE BORDEREAU ====================
+  afficherFormulaireBordereau(): void {
+    if (this.dossier?.statut !== 'VALIDE_POUR_TRANSMISSION') {
+      alert('Seuls les dossiers ayant déjà été validés pour transmission sont éligibles à la génération du bordereau.');
+      return;
+    }
+    this.showBordereauForm = true;
+    this.bordereauGenerationMessage = '';
+    this.bordereauGenerationSuccess = false;
+    
+    if (this.dossier?.beneficiaire) {
+      this.bordereauDestinataire = this.dossier.beneficiaire;
+    }
+  }
+
+  fermerFormulaireBordereau(): void {
+    this.showBordereauForm = false;
+    this.bordereauGenerationMessage = '';
+    this.resetBordereauForm();
+  }
+
+  resetBordereauForm(): void {
+    this.bordereauDestinataire = '';
+    this.bordereauCour = 'INSTANCE';
+    this.bordereauAdresse = '';
+    this.bordereauVille = '';
+    this.bordereauObservation = '';
+    this.bordereauDesignations = [
+      { nom: 'Copies des lettres envoyées à l\'intéressé(e) pour régularisation de la situation administrative', quantite: 1, editable: false },
+      { nom: 'Copie CNIE de l\'intéressé(e)', quantite: 1, editable: false }
+    ];
+    this.nouvelleDesignation = '';
+    this.nouvelleQuantite = 1;
+  }
+
+  ajouterDesignationBordereau(): void {
+    if (this.nouvelleDesignation.trim()) {
+      this.bordereauDesignations.push({
+        nom: this.nouvelleDesignation.trim(),
+        quantite: this.nouvelleQuantite,
+        editable: true
+      });
+      this.nouvelleDesignation = '';
+      this.nouvelleQuantite = 1;
+    }
+  }
+
+  supprimerDesignationBordereau(index: number): void {
+    this.bordereauDesignations.splice(index, 1);
+  }
+
+  genererBordereauPourDossier(): void {
+    if (!this.dossier) return;
+    
+    if (!this.bordereauDestinataire.trim()) {
+      this.bordereauGenerationMessage = 'Veuillez renseigner le nom du destinataire (avocat).';
+      return;
+    }
+    if (!this.bordereauAdresse.trim()) {
+      this.bordereauGenerationMessage = 'Veuillez renseigner l\'adresse.';
+      return;
+    }
+    if (!this.bordereauVille) {
+      this.bordereauGenerationMessage = 'Veuillez sélectionner la ville.';
+      return;
+    }
+
+    const payload = {
+      ids: [this.dossier.idDossier!],
+      destinataire: this.bordereauDestinataire,
+      cour: this.bordereauCour,
+      adresse: this.bordereauAdresse,
+      ville: this.bordereauVille,
+      observation: this.bordereauObservation,
+      designations: this.bordereauDesignations,
+      dossiersDetails: [{
+        referenceInterne: this.dossier.referenceInterne || '',
+        ip: this.dossier.ip,
+        beneficiaire: this.dossier.beneficiaire || '',
+        cin: this.dossier.cin || '',
+        numeroFacture: this.dossier.numeroFacture,
+        montant: this.dossier.montant || 0,
+        rap: this.dossier.rap || 0
+      }]
+    };
+
+    this.dossierService.genererBordereauEnvoi(payload).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bordereau_${this.dossier?.referenceInterne}_${new Date().toISOString().slice(0,19)}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.bordereauGenerationSuccess = true;
+        this.bordereauGenerationMessage = 'Bordereau généré avec succès !';
+        setTimeout(() => this.fermerFormulaireBordereau(), 3000);
+        this.cdr.detectChanges();
+      },
+      error: (err: any) => {
+        console.error(err);
+        this.bordereauGenerationMessage = 'Erreur lors de la génération du bordereau.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
