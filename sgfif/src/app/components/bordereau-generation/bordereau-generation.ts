@@ -29,10 +29,14 @@ export class BordereauGeneration implements OnInit {
 
   // Désignations par défaut
   designations: Designation[] = [
+  { nom: 'Copies des lettres envoyées à l\'intéressé(e) pour régularisation de la situation administrative', quantite: 1, editable: false },
+  { nom: 'Copie CNIE de l\'intéressé(e)', quantite: 1, editable: false }
+];
+  /*designations: Designation[] = [
     { nom: 'Recouvrement de l\'ordre de recette', quantite: 1, editable: false },
     { nom: 'Copies des lettres envoyées à l\'intéressé(e) pour régularisation de la situation administrative', quantite: 1, editable: false },
     { nom: 'Copie CNIE de l\'intéressé(e)', quantite: 1, editable: false }
-  ];
+  ];*/
 
   // Nouvelle désignation à ajouter
   nouvelleDesignation: string = '';
