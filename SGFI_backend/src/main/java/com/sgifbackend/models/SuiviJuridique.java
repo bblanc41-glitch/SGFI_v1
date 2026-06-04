@@ -48,4 +48,13 @@ public class SuiviJuridique implements Serializable {
     @UpdateTimestamp
     @Column(name = "date_modification")
     private LocalDateTime dateModification;
+    
+    
+    // Champs pour la gestion des alerte 
+    @Column(name = "dateDerniereRelance")
+    private LocalDate dateDerniereRelance;  // Date de la dernière relance à l'avocat
+
+    @Column(name = "delaiActif")
+    private Boolean delaiActif = true;      // true = délai en cours, false = délai terminé
+    
 }

@@ -211,14 +211,29 @@
             <div class="suivi-table-wrapper" *ngIf="suivis.length > 0">
               <table class="suivi-table">
                 <thead>
-                  <tr><th>Type</th><th>Référence externe</th><th>Date audience</th><th>Jugement</th><th class="actions-col">Actions</th></tr>
+                  <tr><th>Type</th><th>Référence externe</th><th>Date audience</th><th>Délai</th><th>Jugement</th><th class="actions-col">Actions</th></tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let s of suivis">
                     <td class="type-cell"><span class="audience-badge" [class]="s.typeAudience === 'APPEL' ? 'appel' : (s.typeAudience === 'CASSATION' ? 'cassation' : 'instance')">{{ s.typeAudience }}</span></td>
                     <td class="ref-cell">{{ s.referenceExterne }}</td>
                     <td>{{ s.dateAudience | date:'dd/MM/yyyy' }}</td>
+                    <td class="delai-cell">
+                      <ng-container *ngIf="calculerDelai(s) as delai">
+                        <span *ngIf="delai > 0" [class.text-danger]="delai <= 7" [class.text-warning]="delai > 7 && delai <= 15">
+                          <i class="bi bi-hourglass-split"></i> {{ delai }} jours
+                        </span>
+                        <span *ngIf="delai === 0" class="text-danger">
+                          <i class="bi bi-exclamation-triangle-fill"></i> Délai expiré
+                        </span>
+                        <span *ngIf="delai < 0" class="text-success">
+                          <i class="bi bi-check-circle-fill"></i> Terminé
+                        </span>
+                      </ng-container>
+                      <span *ngIf="calculerDelai(s) === null" class="text-muted">—</span>
+                    </td>
                     <td class="jugement-cell">{{ s.jugement || '—' }}</td>
+
                     <td class="actions-cell">
                       <button class="btn-icon edit" (click)="editerSuivi(s)" title="Modifier"><i class="bi bi-pencil"></i></button>
                       <button class="btn-icon delete" (click)="supprimerSuivi(s)" title="Supprimer"><i class="bi bi-trash"></i></button>

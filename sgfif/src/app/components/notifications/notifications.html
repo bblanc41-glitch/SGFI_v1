@@ -1,27 +1,146 @@
 <div class="notif-page">
   <div class="notif-card">
-    <h2><i class="bi bi-bell-fill"></i> Notifications</h2>
+    <div class="notif-header-main">
+      <h2><i class="bi bi-bell-fill"></i> Notifications</h2>
+      <div class="header-actions">
+        <button class="btn-mark-all" (click)="marquerToutLue()" title="Tout marquer comme lu">
+          <i class="bi bi-check2-all"></i> Tout marquer lu
+        </button>
+        <button class="btn-delete-all" (click)="supprimerTout()" title="Supprimer tout">
+          <i class="bi bi-trash"></i> Tout supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Barre de filtres -->
+    <div class="filters-bar">
+      <div class="filter-group">
+        <label><i class="bi bi-funnel"></i> Type</label>
+        <select [(ngModel)]="filtreType" (change)="appliquerFiltres()" class="filter-select">
+          <option *ngFor="let t of typesNotification" [value]="t">{{ getTypeFiltreLabel(t) }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label><i class="bi bi-eye"></i> Statut</label>
+        <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()" class="filter-select">
+          <option *ngFor="let s of statutsOptions" [value]="s">{{ s === 'TOUS' ? 'Tous' : (s === 'LU' ? 'Lus' : 'Non lus') }}</option>
+        </select>
+      </div>
+
+      <div class="filter-group search-group">
+        <label><i class="bi bi-search"></i> Recherche</label>
+        <input type="text" [(ngModel)]="recherche" (input)="appliquerFiltres()" placeholder="Rechercher..." class="filter-input" />
+      </div>
+
+      <button class="btn-reset" (click)="resetFiltres()" title="Réinitialiser les filtres">
+        <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+      </button>
+    </div>
+
+    <!-- Résumé des filtres -->
+    <div class="filters-summary" *ngIf="filtreType !== 'TOUS' || filtreStatut !== 'TOUS' || recherche">
+      <span class="filter-badge" *ngIf="filtreType !== 'TOUS'">
+        Type: {{ getTypeLabel(filtreType) }}
+        <i class="bi bi-x-circle" (click)="filtreType = 'TOUS'; appliquerFiltres()"></i>
+      </span>
+      <span class="filter-badge" *ngIf="filtreStatut !== 'TOUS'">
+        Statut: {{ filtreStatut === 'LU' ? 'Lus' : 'Non lus' }}
+        <i class="bi bi-x-circle" (click)="filtreStatut = 'TOUS'; appliquerFiltres()"></i>
+      </span>
+      <span class="filter-badge" *ngIf="recherche">
+        Recherche: "{{ recherche }}"
+        <i class="bi bi-x-circle" (click)="recherche = ''; appliquerFiltres()"></i>
+      </span>
+    </div>
+
+    <!-- Compteur de résultats -->
+    <div class="result-count">
+      <i class="bi bi-envelope-paper"></i>
+      {{ notificationsFiltrees.length }} notification(s)
+      <span *ngIf="notificationsFiltrees.length > 0">
+        ({{ notificationsFiltrees.filter(n => !n.lu).length }} non lue(s))
+      </span>
+    </div>
 
     <!-- Spinner de chargement -->
-    <div *ngIf="chargement" class="loading-spinner">Chargement...</div>
+    <div *ngIf="chargement" class="loading-spinner">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p>Chargement des notifications...</p>
+    </div>
 
     <!-- Liste des notifications -->
     <ul class="notif-list" *ngIf="!chargement">
-      <li *ngFor="let n of notifications" [class.lue]="n.lu">
+      <li *ngFor="let n of getNotificationsPage()" [class.lue]="n.lu">
         <div class="notif-content">
-          <span class="notif-message">{{ n.message }}</span>
-          <span class="notif-date">{{ n.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span>
-          <span class="notif-type badge" 
-                [ngClass]="{'bg-warning': n.type === 'DOUBLON_IMPORT', 'bg-info': n.type === 'STATUT_CHANGE'}">
-            {{ n.type }}
-          </span>
+          <div class="notif-header">
+            <i [class]="getTypeIcon(n.type)"></i>
+            <span class="notif-type-badge" [ngClass]="getTypeClass(n.type)">
+              {{ getTypeLabel(n.type) }}
+            </span>
+            <span class="notif-date">{{ n.dateCreation | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="notif-message">{{ n.message }}</div>
+          <div class="notif-dossier" *ngIf="n.idDossier">
+            <i class="bi bi-folder2-open"></i>
+            <a [routerLink]="['/dossier-detail', n.idDossier]" (click)="$event.stopPropagation()">
+              Voir le dossier #{{ n.idDossier }}
+            </a>
+          </div>
         </div>
+        
+        <!-- Actions individuelles (par notification) -->
         <div class="notif-actions">
-          <button *ngIf="!n.lu" (click)="marquerLue(n.id)" class="btn-lue">✓ Marquer lue</button>
-          <button (click)="supprimer(n.id)" class="btn-suppr">🗑️</button>
+          <button *ngIf="!n.lu" (click)="marquerLue(n.id)" class="btn-lue" title="Marquer comme lue">
+            <i class="bi bi-check2-circle"></i>
+          </button>
+          <button (click)="supprimer(n.id)" class="btn-suppr" title="Supprimer">
+            <i class="bi bi-trash"></i>
+          </button>
         </div>
       </li>
-      <li *ngIf="notifications.length === 0">Aucune notification.</li>
+      <li *ngIf="notificationsFiltrees.length === 0" class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <p>Aucune notification ne correspond à vos critères</p>
+        <button class="btn-reset-empty" (click)="resetFiltres()">Voir toutes les notifications</button>
+      </li>
     </ul>
+
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="!chargement && notificationsFiltrees.length > 0">
+      <div class="pagination-info">
+        Affichage de {{ getDebutAffichage() }} à {{ getFinAffichage() }} sur 
+        {{ notificationsFiltrees.length }} notification(s)
+      </div>
+      
+      <div class="pagination-controls">
+        <div class="items-per-page">
+          <label>Afficher :</label>
+          <select [(ngModel)]="elementsParPage" (change)="changerElementsParPage()">
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+            <option [value]="50">50</option>
+          </select>
+        </div>
+
+        <div class="pagination-buttons">
+          <button (click)="pagePrecedente()" [disabled]="pageActuelle === 1" class="page-btn" title="Page précédente">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          
+          <button *ngFor="let page of getPagesArray()" 
+                  (click)="allerPage(page)" 
+                  class="page-btn" 
+                  [class.active]="page === pageActuelle">
+            {{ page }}
+          </button>
+          
+          <button (click)="pageSuivante()" [disabled]="pageActuelle === totalPages" class="page-btn" title="Page suivante">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

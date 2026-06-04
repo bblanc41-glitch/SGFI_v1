@@ -254,12 +254,25 @@ export class DetailDossier implements OnInit {
     this.erreurSuivi = '';
   }
 
+
+  editerSuivi(suivi: SuiviJuridique): void {
+  this.suiviEnEdition = { ...suivi };
+  this.nouveauSuivi = { ...suivi };
+  this.showForm = true;
+  this.erreurSuivi = '';
+  // Recalculer le délai pour affichage
+  const delai = this.calculerDelai(suivi);
+  console.log(`Délai pour ${suivi.typeAudience}: ${this.getDelaiLabel(delai)}`);
+  }
+
+
+  /*
   editerSuivi(suivi: SuiviJuridique): void {
     this.suiviEnEdition = { ...suivi };
     this.nouveauSuivi = { ...suivi };
     this.showForm = true;
     this.erreurSuivi = '';
-  }
+  }*/
 
   ajouterSuivi(): void {
     if (!this.dossier?.referenceInterne) return;
@@ -696,4 +709,71 @@ export class DetailDossier implements OnInit {
       }
     });
   }
+
+
+  // ==================== MÉTHODES DE CALCUL DE DÉLAI ====================
+
+/**
+ * Calcule le nombre de jours restants pour un suivi
+ * Règles :
+ * - Si dateAudience et jugement sont tous deux renseignés → délai terminé (retourne -1)
+ * - Si dateAudience existe mais jugement non → délai basé sur dateAudience
+ * - Si ni dateAudience ni jugement → délai basé sur dateCreation + 30 jours (délai avocat)
+ */
+calculerDelai(suivi: SuiviJuridique): number | null {
+  if (!suivi) return null;
+  
+  // Cas 1 : Jugement et date d'audience sont renseignés → dossier traité
+  if (suivi.jugement && suivi.jugement.trim() !== '' && suivi.dateAudience) {
+    return -1; // Délai terminé
+  }
+  
+  const aujourdhui = new Date();
+  aujourdhui.setHours(0, 0, 0, 0);
+  
+  // Cas 2 : Date d'audience renseignée (mais pas de jugement)
+  if (suivi.dateAudience) {
+    const dateAudience = new Date(suivi.dateAudience);
+    dateAudience.setHours(0, 0, 0, 0);
+    const diffTime = dateAudience.getTime() - aujourdhui.getTime();
+    const joursRestants = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return joursRestants;
+  }
+  
+  // Cas 3 : Aucune date d'audience → délai basé sur dateCreation + 30 jours
+  if (suivi.dateCreation) {
+    const dateCreation = new Date(suivi.dateCreation);
+    dateCreation.setHours(0, 0, 0, 0);
+    const dateLimite = new Date(dateCreation);
+    dateLimite.setDate(dateLimite.getDate() + 30); // Délai arbitraire de 30 jours
+    const diffTime = dateLimite.getTime() - aujourdhui.getTime();
+    const joursRestants = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return joursRestants;
+  }
+  
+  return null;
+}
+
+//Retourne la classe CSS pour l'affichage du délai
+getDelaiClass(joursRestants: number | null): string {
+  if (joursRestants === null) return '';
+  if (joursRestants === -1) return 'text-success';
+  if (joursRestants <= 0) return 'text-danger';
+  if (joursRestants <= 7) return 'text-danger fw-bold';
+  if (joursRestants <= 15) return 'text-warning';
+  return 'text-info';
+}
+
+
+//Retourne le libellé du délai
+getDelaiLabel(joursRestants: number | null): string {
+  if (joursRestants === null) return '—';
+  if (joursRestants === -1) return '✓ Traité';
+  if (joursRestants <= 0) return '⚠️ Délai expiré';
+  if (joursRestants <= 7) return `⚠️ Urgent (${joursRestants} j)`;
+  if (joursRestants <= 15) return `⏰ Bientôt (${joursRestants} j)`;
+  return `${joursRestants} jours`;
+}
+
+
 }

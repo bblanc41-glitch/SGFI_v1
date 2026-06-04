@@ -1082,3 +1082,30 @@ textarea.form-control {
   padding-top: 1rem;
   border-top: 1px solid #e8edf5;
 }
+
+/* Styles pour les délais */
+.delai-cell {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.delai-cell .text-danger {
+  color: #dc3545 !important;
+  font-weight: 500;
+}
+
+.delai-cell .text-warning {
+  color: #fd7e14 !important;
+}
+
+.delai-cell .text-success {
+  color: #198754 !important;
+}
+
+.delai-cell .text-info {
+  color: #0dcaf0 !important;
+}
+
+.delai-cell i {
+  margin-right: 0.25rem;
+}

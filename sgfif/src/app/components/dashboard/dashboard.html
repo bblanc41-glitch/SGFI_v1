@@ -10,7 +10,7 @@
       <div class="avatar-circle">{{ userInitials }}</div>
       <div class="sidebar-user-info">
         <div class="sidebar-username">{{ username }}</div>
-        <div class="sidebar-role">{{ userRole }}</div> <!-- rôle lu depuis le token JWT (ADMIN, JURIDIQUE, CCR) -->
+        <div class="sidebar-role">{{ userRole }}</div>
       </div>
     </div>
 
@@ -59,13 +59,21 @@
       </a>
 
       <a class="sidebar-item"
+         [class.active]="activeMenu === 'alertes'"
+         (click)="setMenu('alertes')"
+         routerLink="/dashboard">
+        <i class="bi bi-exclamation-triangle-fill s-icon"></i>
+        Alertes
+        <span class="alert-badge" *ngIf="alertesCount > 0">{{ alertesCount }}</span>
+      </a>
+
+      <a class="sidebar-item"
          [class.active]="activeMenu === 'notifications'"
          (click)="setMenu('notifications')"
          routerLink="/notifications">
         <i class="bi bi-bell-fill s-icon"></i>
         Notifications
-        <!-- Badge dynamique — s'affiche uniquement s'il y a des notifs non lues -->
-        <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span> <!-- notifCount = notifications.filter(n => !n.lue).length -->
+        <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span>
       </a>
 
     </nav>
@@ -94,10 +102,9 @@
       <span class="badge-sgfi">SGFI</span>
     </div>
 
-    <!--SPINNER DE CHARGEMENT
-         Affiché tant que les stats n'ont pas été reçues du backend
-         chargement = true → spinner visible
-         chargement = false → contenu visible -->
+    
+
+    <!--SPINNER DE CHARGEMENT -->
     <div *ngIf="chargement" class="loading-state">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Chargement…</span>
@@ -105,7 +112,7 @@
       <p class="mt-3 text-muted">Chargement des statistiques…</p>
     </div>
 
-    <!-- sms d'erreur si le backend est inaccessible -->
+    <!-- message d'erreur si le backend est inaccessible -->
     <div *ngIf="erreur && !chargement" class="alert alert-warning">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       Impossible de charger les statistiques. Vérifiez la connexion au serveur.
@@ -114,7 +121,7 @@
     <!------ CONTENU PRINCIPAL (visible après chargement) ────────────────────── -->
     <ng-container *ngIf="!chargement">
 
-      <!-- CARTES STATISTIQUES dynamique obtenu depuis le getter cartes[] les valeurs viennent du backend via dossierService.getStats() -->
+      <!-- CARTES STATISTIQUES -->
       <div class="stats-grid">
         <a *ngFor="let c of cartes" class="stat-card stat-{{ c.couleur }}" [routerLink]="c.lien" [class.no-link]="!c.lien">
           <div class="stat-icon">
@@ -122,7 +129,7 @@
           </div>
           <div class="stat-body">
             <div class="stat-value">
-              <ng-container *ngIf="c.montant; else nombreSimple"> <!-- Montant : formatage monétaire — autres : nombre entier -->
+              <ng-container *ngIf="c.montant; else nombreSimple">
                 {{ c.valeur | number:'1.0-0' }} MAD
               </ng-container>
               <ng-template #nombreSimple>
@@ -134,44 +141,92 @@
         </a>
       </div>
 
+      <!-- ALERTES RÉCAPITULATIVES -->
+      <div class="alertes-recap" *ngIf="alertesRecap.length > 0">
+        <div class="alertes-header">
+          <h5><i class="bi bi-bell-fill"></i> Alertes importantes</h5>
+        </div>
+        <div class="alertes-grid">
+          <div *ngFor="let alerte of alertesRecap" class="alerte-item" [class]="alerte.type">
+            <i [class]="alerte.icone"></i>
+            <span>{{ alerte.message }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- ACTIONS RAPIDES -->
       <div class="actions-section">
         <h5 class="section-title">Actions rapides</h5>
         <div class="actions-grid">
-
           <a routerLink="/liste-dossiers" class="action-card">
             <i class="bi bi-list-ul action-icon text-primary"></i>
             <div class="action-label">Liste des dossiers</div>
             <div class="action-sub">Consulter et gérer tous les dossiers</div>
           </a>
-
           <a routerLink="/saisie-manuelle" class="action-card">
             <i class="bi bi-pencil-square action-icon text-success"></i>
             <div class="action-label">Saisie manuelle</div>
             <div class="action-sub">Créer un nouveau dossier</div>
           </a>
-
           <a routerLink="/importation" class="action-card">
             <i class="bi bi-upload action-icon text-info"></i>
             <div class="action-label">Importation CCR</div>
             <div class="action-sub">Importer le fichier Excel de la comptabilité</div>
           </a>
-
         </div>
       </div>
 
-      <!-- DOSSIERS RÉCENTS
-           Les 5 derniers dossiers modifiés — chargés depuis getRecent(5)
-      -->
-      <div class="table-section">
-        <div class="table-header">
-          <h5 class="section-title mb-0">Dossiers récents</h5>
-          <a routerLink="/liste-dossiers" class="voir-tous">
-            Voir tous les dossiers <i class="bi bi-arrow-right"></i>
-          </a>
+
+
+      <!-- ==================== BARRE DE FILTRES ==================== -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label><i class="bi bi-funnel"></i> Statut</label>
+          <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()" class="filter-select">
+            <option value="">Tous les statuts</option>
+            <option value="URGENT">⚠️ Urgents (délai imminent)</option>
+            <option value="INCOMPLET">📋 Incomplets</option>
+            <option value="EN_INSTANCE">⚖️ En instance</option>
+            <option value="EN_APPEL">📢 En appel</option>
+            <option value="EN_CASSATION">🏛️ En cassation</option>
+            <option value="ENVOYE_AVOCAT">📤 Envoyé à l'avocat</option>
+            <option value="VALIDE_POUR_TRANSMISSION">✅ Validé pour transmission</option>
+            <option value="CLOTURE">✔️ Clôturés</option>
+          </select>
         </div>
 
-        <!-- Spinner dossiers récents si nécessaire -->
+        <div class="filter-group">
+          <label><i class="bi bi-calendar-exclamation"></i> Délai</label>
+          <select [(ngModel)]="filtreDelai" (change)="appliquerFiltres()" class="filter-select">
+            <option value="">Tous</option>
+            <option value="7">⚠️ Action dans 7 jours</option>
+            <option value="15">⚠️ Action dans 15 jours</option>
+            <option value="30">⚠️ Action dans 30 jours</option>
+            <option value="EXPIRED">🔴 Délai dépassé</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label><i class="bi bi-search"></i> Recherche</label>
+          <input type="text" [(ngModel)]="recherche" (input)="appliquerFiltres()" placeholder="IP, bénéficiaire, référence..." class="filter-input" />
+        </div>
+
+        <button class="btn-reset" (click)="resetFiltres()">
+          <i class="bi bi-arrow-counterclockwise"></i> Réinitialiser
+        </button>
+      </div>
+
+
+
+      <!-- TABLEAU DES DOSSIERS FILTRÉS -->
+      <div class="table-section">
+        <div class="table-header">
+          <h5 class="section-title mb-0">
+            Dossiers {{ filtreStatut ? '(' + getLibelleFiltre() + ')' : '' }}
+          </h5>
+          <span class="result-count">{{ dossiersFiltres.length }} dossier(s)</span>
+        </div>
+
         <div class="table-wrapper">
           <table class="data-table">
             <thead>
@@ -182,43 +237,36 @@
                 <th>N° Facture</th>
                 <th>Montant (MAD)</th>
                 <th>Statut</th>
+                <th>Délai action</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              <!-- Ligne pour chaque dossier récent -->
-              <tr *ngFor="let d of recentDossiers">
+              <tr *ngFor="let d of dossiersFiltres.slice(0, 20)">
                 <td class="ref-col">{{ d.referenceInterne || '—' }}</td>
                 <td>{{ d.ip }}</td>
                 <td>{{ d.beneficiaire || '—' }}</td>
                 <td>{{ d.numeroFacture }}</td>
-                <td class="amount-col">
-                  <!-- montant peut être null si dossier sans infosOrigine -->
-                  {{ d.montant != null ? (d.montant | number:'1.0-2') : '—' }}
+                <td class="amount-col">{{ d.montant != null ? (d.montant | number:'1.0-2') : '—' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getBadgeClass(d.statut)">{{ getLibelle(d.statut) }}</span>
                 </td>
                 <td>
-                  <span class="badge" [ngClass]="getStatutClass(d.statut || '')">
-                    {{ d.statut || 'Importé CCR' }}
+                  <span *ngIf="d.dateLimiteAction" [class.text-danger]="estUrgent(d)" [class.text-warning]="estProche(d)">
+                    {{ calculerJoursRestants(d.dateLimiteAction) }} jours
                   </span>
-                </td>
+                  <span *ngIf="!d.dateLimiteAction" class="text-muted">—</span>
+                 </td>
                 <td>
-                  <!--<a class="btn-voir"
-                     [routerLink]="['/liste-dossiers']">
-                    <i class="bi bi-eye"></i> Voir
-                  </a>-->
-                  <button class="btn btn-sm btn-info me-1" (click)="voirDossier(d.idDossier)">
+                  <button class="btn-voir" (click)="voirDossier(d.idDossier)">
                     <i class="bi bi-eye"></i> Voir
                   </button>
                 </td>
               </tr>
-
-
-              
-              <!-- Ligne vide si aucun dossier -->
-              <tr *ngIf="recentDossiers.length === 0">
-                <td colspan="7" class="empty-row">
+              <tr *ngIf="dossiersFiltres.length === 0">
+                <td colspan="8" class="empty-row">
                   <i class="bi bi-inbox me-2"></i>
-                  Aucun dossier récent
+                  Aucun dossier correspondant aux critères
                 </td>
               </tr>
             </tbody>

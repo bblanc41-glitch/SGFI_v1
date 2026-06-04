@@ -101,6 +101,8 @@ export interface DossierRecent {
   statut?:           string;
   referenceInterne?: string;
   montant?:          number;  // ← vient de DossierImport.montant via @OneToOne
+  dateLimiteAction?: string;
+  dateMiseAJour?:    string;
 }
 
 // ── INTERFACE STATS Global ──────────────────────────────────────────────────────────
