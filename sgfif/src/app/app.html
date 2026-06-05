@@ -1,319 +1,92 @@
-<style>
-  :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --vivid-pink: oklch(69.02% 0.277 332.77);
-    --hot-red: oklch(61.42% 0.238 15.34);
-    --orange-red: oklch(63.32% 0.24 31.68);
+<!-- BARRE DE NAVIGATION VERTICALE (SIDEBAR)
+     *ngIf="estConnecte()" → masquée sur /login, visible sur toutes les autres routes -->
+<aside class="sgfi-sidebar" *ngIf="estConnecte()">
 
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
-
-    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
-      180deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
-      90deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --pill-accent: var(--bright-blue);
-
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    display: block;
-    height: 100dvh;
-  }
-
-  h1 {
-    font-size: 3.125rem;
-    color: var(--gray-900);
-    font-weight: 500;
-    line-height: 100%;
-    letter-spacing: -0.125rem;
-    margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-  }
-
-  p {
-    margin: 0;
-    color: var(--gray-700);
-  }
-
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-
-  .angular-logo {
-    max-width: 9.2rem;
-  }
-
-  .content {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 3rem;
-  }
-
-  .content h1 {
-    margin-top: 1.75rem;
-  }
-
-  .content p {
-    margin-top: 1.5rem;
-  }
-
-  .divider {
-    width: 1px;
-    background: var(--red-to-pink-to-purple-vertical-gradient);
-    margin-inline: 0.5rem;
-  }
-
-  .pill-group {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    --pill-accent: var(--bright-blue);
-    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
-    color: var(--pill-accent);
-    padding-inline: 0.75rem;
-    padding-block: 0.375rem;
-    border-radius: 2.75rem;
-    border: 0;
-    transition: background 0.3s ease;
-    font-family: var(--inter-font);
-    font-size: 0.875rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.4rem;
-    letter-spacing: -0.00875rem;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .pill:hover {
-    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
-  }
-
-  .pill-group .pill:nth-child(6n + 1) {
-    --pill-accent: var(--bright-blue);
-  }
-  .pill-group .pill:nth-child(6n + 2) {
-    --pill-accent: var(--electric-violet);
-  }
-  .pill-group .pill:nth-child(6n + 3) {
-    --pill-accent: var(--french-violet);
-  }
-
-  .pill-group .pill:nth-child(6n + 4),
-  .pill-group .pill:nth-child(6n + 5),
-  .pill-group .pill:nth-child(6n + 6) {
-    --pill-accent: var(--hot-red);
-  }
-
-  .pill-group svg {
-    margin-inline-start: 0.25rem;
-  }
-
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.73rem;
-    margin-top: 1.5rem;
-  }
-
-  .social-links path {
-    transition: fill 0.3s ease;
-    fill: var(--gray-400);
-  }
-
-  .social-links a:hover svg path {
-    fill: var(--gray-900);
-  }
-
-  @media screen and (max-width: 650px) {
-    .content {
-      flex-direction: column;
-      width: max-content;
-    }
-
-    .divider {
-      height: 1px;
-      width: 100%;
-      background: var(--red-to-pink-to-purple-horizontal-gradient);
-      margin-block: 1.5rem;
-    }
-  }
-</style>
-
-<!-- BARRE DE NAVIGATION GLOBALE
-     *ngIf="estConnecte()" → masquée sur /login, visible sur toutes les autres routes.
-     RouterLinkActive → ajoute "nav-active" sur le lien de la route courante. -->
-<nav class="sgfi-navbar" *ngIf="estConnecte()">
-
-  <div class="nav-brand">
-    <img src="assets/Logo_chu.png" alt="CHU Hassan II" class="nav-logo-img"
-         onerror="this.style.display='none'" />
-    <div class="nav-title">
-      <span class="nav-title-main">SGFI</span>
-      <span class="nav-title-sub">CHU Hassan II — Fès</span>
+  <!-- Identité utilisateur -->
+  <div class="sidebar-user">
+    <div class="avatar-circle">{{ userInitials }}</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-username">{{ username }}</div>
+      <div class="sidebar-role">{{ userRole }}</div>
     </div>
   </div>
 
-  <ul class="nav-links">
-    <li>
-      <a routerLink="/dashboard" routerLinkActive="nav-active" class="nav-link">
-        <i class="bi bi-grid-1x2-fill"></i> Tableau de bord
-      </a>
-    </li>
-    <li>
-      <a routerLink="/liste-dossiers" routerLinkActive="nav-active" class="nav-link">
-        <i class="bi bi-folder2-open"></i> Dossiers
-      </a>
-    </li>
-    <li>
-      <a routerLink="/saisie-manuelle" routerLinkActive="nav-active" class="nav-link">
-        <i class="bi bi-pencil-square"></i> Saisie manuelle
-      </a>
-    </li>
-    <li>
-      <a routerLink="/importation" routerLinkActive="nav-active" class="nav-link">
-        <i class="bi bi-upload"></i> Importation CCR
-      </a>
-    </li>
-  </ul>
+  <hr class="sidebar-divider" />
 
-  <div class="nav-right">
-    <span class="nav-username">
-      <i class="bi bi-person-circle"></i> {{ username }}
-    </span>
-    <button class="btn-deconnexion" (click)="deconnexion()">
-      <i class="bi bi-box-arrow-right"></i> Déconnexion
-    </button>
-  </div>
+  <!-- Navigation -->
+  <nav class="sidebar-nav">
 
-</nav>
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'dashboard'"
+       (click)="setMenu('dashboard')"
+       routerLink="/dashboard">
+      <i class="bi bi-grid-1x2-fill s-icon"></i>
+      Tableau de bord
+    </a>
 
-<!-- router-outlet affiche le composant de la route active -->
-<main [class.with-navbar]="estConnecte()">
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'dossiers'"
+       (click)="setMenu('dossiers')"
+       routerLink="/liste-dossiers">
+      <i class="bi bi-folder2-open s-icon"></i>
+      Dossiers
+    </a>
+
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'saisie'"
+       (click)="setMenu('saisie')"
+       routerLink="/saisie-manuelle">
+      <i class="bi bi-pencil-square s-icon"></i>
+      Saisie manuelle
+    </a>
+
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'importation'"
+       (click)="setMenu('importation')"
+       routerLink="/importation">
+      <i class="bi bi-upload s-icon"></i>
+      Importation CCR
+    </a>
+
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'bordereau'"
+       (click)="setMenu('bordereau')"
+       routerLink="/bordereau">
+      <i class="bi bi-file-pdf-fill s-icon"></i>
+      Générer bordereau
+    </a>
+
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'alertes'"
+       (click)="setMenu('alertes')"
+       routerLink="/dashboard">
+      <i class="bi bi-exclamation-triangle-fill s-icon"></i>
+      Alertes
+      <span class="alert-badge" *ngIf="alertesCount > 0">{{ alertesCount }}</span>
+    </a>
+
+    <a class="sidebar-item"
+       [class.active]="activeMenu === 'notifications'"
+       (click)="setMenu('notifications')"
+       routerLink="/notifications">
+      <i class="bi bi-bell-fill s-icon"></i>
+      Notifications
+      <span class="notif-badge" *ngIf="notifCount > 0">{{ notifCount }}</span>
+    </a>
+
+  </nav>
+
+  <hr class="sidebar-divider" />
+
+  <!-- Déconnexion en bas de sidebar -->
+  <button class="btn-logout" (click)="deconnexion()">
+    <i class="bi bi-box-arrow-left"></i>
+    Déconnexion
+  </button>
+
+</aside>
+
+<!-- Contenu principal avec margin-left pour la sidebar -->
+<main [class.with-sidebar]="estConnecte()">
   <router-outlet></router-outlet>
 </main>
-
-<!--
-      Version 1
-══════════════════════════════════════════════════════════════════════════
-     APP.HTML — Racine de l'application SGFI
-     
-     La barre de navigation globale est ici et ne s'affiche QUE si l'utilisateur
-     est connecté (token présent dans localStorage).
-     
-     estConnecte() → false sur /login → navbar masquée
-     estConnecte() → true sur toutes les autres routes → navbar visible
-     ══════════════════════════════════════════════════════════════════════════ -->
-
-<!-- ── BARRE DE NAVIGATION GLOBALE ─────────────────────────────────────────────
-     *ngIf="estConnecte()" : masquée sur /login, visible partout ailleurs.
-     RouterLink : navigation sans rechargement de page (SPA Angular).
-     RouterLinkActive : ajoute la classe "active" sur le lien de la route active.
-     ─────────────────────────────────────────────────────────────────────────── 
-<nav class="sgfi-navbar" *ngIf="estConnecte()">-->
-
-  <!-- Logo + Titre 
-  <div class="nav-brand">
-    <img
-      src="assets/Logo_chu1.png"
-      alt="CHU Hassan II"
-      class="nav-logo-img"
-      onerror="this.style.display='none'"
-    />
-    <div class="nav-title">
-      <span class="nav-title-main">SGFI</span>
-      <span class="nav-title-sub">CHU Hassan II — Fès</span>
-    </div>
-  </div>-->
-
-  <!-- Liens de navigation 
-  <ul class="nav-links">
-    <li>
-      <a routerLink="/dashboard"
-         routerLinkActive="nav-active"
-         class="nav-link">
-        <i class="bi bi-grid-1x2-fill"></i>
-        Tableau de bord
-      </a>
-    </li>
-    <li>
-      <a routerLink="/liste-dossiers"
-         routerLinkActive="nav-active"
-         class="nav-link">
-        <i class="bi bi-folder2-open"></i>
-        Dossiers
-      </a>
-    </li>
-    <li>
-      <a routerLink="/saisie-manuelle"
-         routerLinkActive="nav-active"
-         class="nav-link">
-        <i class="bi bi-pencil-square"></i>
-        Saisie manuelle
-      </a>
-    </li>
-    <li>
-      <a routerLink="/importation"
-         routerLinkActive="nav-active"
-         class="nav-link">
-        <i class="bi bi-upload"></i>
-        Importation CCR
-      </a>
-    </li>
-  </ul>-->
-
-  <!-- Zone droite : utilisateur + déconnexion 
-  <div class="nav-right">
-    <span class="nav-username">
-      <i class="bi bi-person-circle"></i>
-      {{ username }}--> <!-- username est exposé depuis app.ts via authService.getDecodedToken() 
-    </span>
-    <button class="btn-deconnexion" (click)="deconnexion()">
-      <i class="bi bi-box-arrow-right"></i>
-      Déconnexion
-    </button>
-  </div>
-
-</nav>-->
-
-<!-- ── CONTENU DES ROUTES ────────────────────────────────────────────────────── -->
-<!-- router-outlet affiche le composant de la route active
-     (Login, Dashboard, ListeDossiers, SaisieDossier, Importation…)           
-<main [class.with-navbar]="estConnecte()">
-  <router-outlet></router-outlet>
-</main>-->

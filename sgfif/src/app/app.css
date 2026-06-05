@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════════════════════
-   APP.CSS — Styles globaux : navbar + layout racine SGFI
+   APP.CSS — Sidebar verticale SGFI
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── RESET / BASE ────────────────────────────────────────────────────────────── */
@@ -12,168 +12,196 @@ body {
   background: #f4f6f9;
 }
 
-/* ── BARRE DE NAVIGATION GLOBALE ────────────────────────────────────────────── */
-
-.sgfi-navbar {
-  position: sticky;
+/* ── SIDEBAR VERTICALE ────────────────────────────────────────────────────── */
+.sgfi-sidebar {
+  position: fixed;
   top: 0;
-  z-index: 1000;
-  /* ↑ z-index élevé pour rester au-dessus du contenu lors du scroll */
-  height: 60px;
+  left: 0;
+  width: 260px;
+  height: 100vh;
   background: #1a2236;
-  color: #e8edf5;
-  display: flex;
-  align-items: center;
-  padding: 0 1.5rem;
-  gap: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,.25);
-}
-
-/* Logo + Titre CHU */
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  flex-shrink: 0;
-  text-decoration: none;
-}
-
-.nav-logo-img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
-  border-radius: 6px;
-}
-
-.nav-title {
+  color: #cdd5e0;
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  padding: 1.5rem 0;
+  z-index: 1000;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
 }
 
-.nav-title-main {
-  font-size: .95rem;
-  font-weight: 800;
+/* Utilisateur */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.25rem 1rem;
+}
+
+.avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #1565C0;
   color: #fff;
-  letter-spacing: .08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
-.nav-title-sub {
-  font-size: .68rem;
-  color: #7a8aab;
+.sidebar-user-info {
+  overflow: hidden;
+}
+
+.sidebar-username {
+  font-weight: 600;
+  color: #e8edf5;
+  font-size: 0.9rem;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Séparateur visuel après le brand */
-.nav-brand::after {
-  content: '';
-  display: block;
-  width: 1px;
-  height: 32px;
-  background: #2a3550;
-  margin-left: .5rem;
+.sidebar-role {
+  font-size: 0.7rem;
+  color: #7a8aab;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Liens de navigation */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: .25rem;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.sidebar-divider {
+  border-color: #2a3550;
+  margin: 0.5rem 1.25rem;
+}
+
+/* Navigation */
+.sidebar-nav {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0 0.75rem;
 }
 
-.nav-link {
+.sidebar-item {
   display: flex;
   align-items: center;
-  gap: .4rem;
-  padding: .45rem .9rem;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
   border-radius: 8px;
   color: #9aa8c0;
   text-decoration: none;
-  font-size: .85rem;
-  font-weight: 500;
-  transition: background .18s, color .18s;
-  white-space: nowrap;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  position: relative;
 }
 
-.nav-link:hover {
+.sidebar-item:hover {
   background: #243050;
   color: #e8edf5;
 }
 
-.nav-link.nav-active {
-  /* Classe ajoutée par routerLinkActive="nav-active" sur la route active */
+.sidebar-item.active {
   background: #1565C0;
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-.nav-link i { font-size: .95rem; }
-
-/* Zone droite : username + déconnexion */
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-left: auto;
+.s-icon {
+  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
-.nav-username {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  font-size: .85rem;
-  color: #cdd5e0;
-  white-space: nowrap;
+/* Badges */
+.notif-badge {
+  margin-left: auto;
+  background: #e53935;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  min-width: 18px;
+  text-align: center;
 }
 
-.nav-username i { font-size: 1.1rem; color: #7a8aab; }
+.alert-badge {
+  margin-left: auto;
+  background: #dc3545;
+  color: white;
+  border-radius: 20px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
 
-.btn-deconnexion {
-  padding: .4rem .9rem;
+/* Déconnexion */
+.btn-logout {
+  margin: 0.5rem 0.75rem 0;
+  padding: 0.6rem 0.85rem;
   background: transparent;
   border: 1px solid #3a4a6a;
   border-radius: 8px;
   color: #9aa8c0;
-  font-size: .82rem;
+  font-size: 0.875rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: .4rem;
-  transition: background .18s, color .18s, border-color .18s;
-  white-space: nowrap;
+  gap: 0.6rem;
+  transition: background 0.18s, color 0.18s;
+  width: calc(100% - 1.5rem);
 }
 
-.btn-deconnexion:hover {
+.btn-logout:hover {
   background: #c62828;
   border-color: #c62828;
   color: #fff;
 }
 
-/* ── CONTENU PRINCIPAL ──────────────────────────────────────────────────────── */
-
+/* ── CONTENU PRINCIPAL ────────────────────────────────────────────────────── */
 main {
-  display: block;
+  transition: margin-left 0.3s ease;
 }
 
-main.with-navbar {
-  /* Quand la navbar est visible, le contenu commence juste en dessous */
-  min-height: calc(100vh - 60px);
+main.with-sidebar {
+  margin-left: 260px;
+  min-height: 100vh;
 }
 
-/* ── RESPONSIVE NAVBAR ──────────────────────────────────────────────────────── */
-
-@media (max-width: 900px) {
-  .nav-links { display: none; }
-  /* Sur mobile, la sidebar du dashboard prend le relais pour la navigation */
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sgfi-sidebar {
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sgfi-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  main.with-sidebar {
+    margin-left: 0;
+  }
 }
 
-@media (max-width: 600px) {
-  .nav-title-sub  { display: none; }
-  .nav-username   { display: none; }
+/* Scrollbar personnalisée pour la sidebar */
+.sgfi-sidebar::-webkit-scrollbar {
+  width: 4px;
 }
 
+.sgfi-sidebar::-webkit-scrollbar-track {
+  background: #2a3550;
+}
+
+.sgfi-sidebar::-webkit-scrollbar-thumb {
+  background: #1565C0;
+  border-radius: 4px;
+}
+
+.sgfi-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #0d47a1;
+}
