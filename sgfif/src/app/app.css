@@ -205,3 +205,72 @@ main.with-sidebar {
 .sgfi-sidebar::-webkit-scrollbar-thumb:hover {
   background: #0d47a1;
 }
+
+
+/* ==================== RÉSUMÉ DES FILTRES ==================== */
+.filters-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #e8edf5;
+}
+
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  background: #e9ecef;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+.filter-badge i:last-child {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.filter-badge i:last-child:hover {
+  opacity: 1;
+  color: #dc3545;
+}
+
+/* ==================== COLONNE DÉLAI ==================== */
+.delai-col {
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+  font-weight: 600;
+}
+
+.text-warning {
+  color: #fd7e14 !important;
+}
+
+.text-success {
+  color: #198754 !important;
+}
+
+.text-info {
+  color: #0dcaf0 !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.delai-col i {
+  margin-right: 0.25rem;
+}
+
+.fw-bold {
+  font-weight: 700;
+}

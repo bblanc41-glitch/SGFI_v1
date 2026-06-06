@@ -5,6 +5,396 @@ import { Router, RouterLink } from '@angular/router';
 import { DossierService } from '../../services/dossier.service';
 import { AuthService } from '../../services/auth.service';
 import { Stats, DossierRecent, Notification, getBadgeClass, getLibelle, Dossier } from '../../models/dossier';
+import { SuiviJuridique } from '../../models/suivi-juridique';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule],
+  templateUrl: './dashboard.html',
+  styleUrls: ['./dashboard.css'],
+})
+export class Dashboard implements OnInit {
+
+  chargement = true;
+  erreur = false;
+
+  username = '';
+  userInitials = '';
+  userRole = '';
+
+  stats: Stats = {
+    total: 0, enAttente: 0, envoyeAvocat: 0,
+    enInstance: 0, cloture: 0, incomplet: 0, montantImpaye: 0,
+  };
+
+  notifications: Notification[] = [];
+  recentDossiers: DossierRecent[] = [];
+  notifCount = 0;
+  alertesCount = 0;
+  activeMenu = 'dashboard';
+
+  // ==================== PROPRIÉTÉS DE FILTRAGE ====================
+  filtreStatut: string = '';
+  filtreDelai: string = '';
+  recherche: string = '';
+  dossiersFiltres: any[] = [];
+  tousDossiers: any[] = [];
+
+  // Cache des suivis
+  suivisCache: Map<string, SuiviJuridique[]> = new Map();
+
+  // Alertes récapitulatives
+  alertesRecap: any[] = [];
+
+  getLibelle = getLibelle;
+  getBadgeClass = getBadgeClass;
+
+  private appelsEnCours = 0;
+
+  constructor(
+    private dossierService: DossierService,
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.chargerUtilisateur();
+    this.chargerStats();
+    this.chargerDossiersRecents();
+    this.chargerNotifCount();
+    this.chargerTousDossiers();
+  }
+
+  private verifierFinChargement(): void {
+    this.appelsEnCours--;
+    if (this.appelsEnCours === 0) {
+      this.chargement = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  chargerUtilisateur(): void {
+    const decoded = this.authService.getDecodedToken();
+    if (!decoded) { this.router.navigate(['/login']); return; }
+    this.username = decoded.sub || 'Utilisateur';
+    this.userRole = decoded.role || '';
+    this.userInitials = this.username
+      .split(' ').map(m => m[0] ?? '').join('')
+      .toUpperCase().slice(0, 2) || this.username.slice(0, 2).toUpperCase();
+    this.cdr.detectChanges();
+  }
+
+  chargerStats(): void {
+    this.appelsEnCours++;
+    this.dossierService.getStats().subscribe({
+      next: s => {
+        this.stats = s;
+        this.cdr.detectChanges();
+        this.verifierFinChargement();
+      },
+      error: err => {
+        console.error('Erreur chargement stats', err);
+        this.erreur = true;
+        this.verifierFinChargement();
+      }
+    });
+  }
+
+  chargerDossiersRecents(): void {
+    this.appelsEnCours++;
+    this.dossierService.getRecent(5).subscribe({
+      next: data => {
+        this.recentDossiers = data;
+        this.cdr.detectChanges();
+        this.verifierFinChargement();
+      },
+      error: err => {
+        console.error('Erreur chargement dossiers récents', err);
+        this.verifierFinChargement();
+      }
+    });
+  }
+
+  chargerTousDossiers(): void {
+    this.dossierService.getDossiers().subscribe({
+      next: (data: any[]) => {
+        this.tousDossiers = data;
+        this.dossiersFiltres = [...this.tousDossiers];
+        this.chargerTousLesSuivis();
+        this.cdr.detectChanges();
+      },
+      error: err => console.error('Erreur chargement dossiers', err)
+    });
+  }
+
+  // ==================== CHARGEMENT DES SUIVIS ====================
+  chargerTousLesSuivis(): void {
+    this.tousDossiers.forEach(dossier => {
+      if (dossier.referenceInterne) {
+        this.dossierService.getSuivis(dossier.referenceInterne).subscribe({
+          next: (suivis) => {
+            this.suivisCache.set(dossier.referenceInterne!, suivis);
+            this.genererAlertesRecap();
+            this.appliquerFiltres();
+            this.cdr.detectChanges();
+          },
+          error: (err) => console.error(`Erreur chargement suivis pour ${dossier.referenceInterne}`, err)
+        });
+      }
+    });
+  }
+
+  getSuivisDuDossier(dossier: any): SuiviJuridique[] {
+    return this.suivisCache.get(dossier.referenceInterne) || [];
+  }
+
+  // ==================== CALCUL DU DÉLAI GLOBAL ====================
+  calculerDelaiGlobal(dossier: any): { jours: number | null; niveau: string; label: string; class: string } {
+    const suivis = this.getSuivisDuDossier(dossier);
+    
+    if (suivis.length === 0) {
+      return { jours: null, niveau: 'aucun', label: 'Aucun suivi', class: 'text-muted' };
+    }
+
+    let joursMin: number | null = null;
+    let aDesSuivisTraites = true;
+    let aDesSuivisUrgents = false;
+    let aDesSuivisProches = false;
+
+    for (const suivi of suivis) {
+      const delai = this.calculerDelai(suivi);
+      
+      if (delai !== null && delai !== -1) {
+        aDesSuivisTraites = false;
+        if (delai <= 7) aDesSuivisUrgents = true;
+        if (delai > 7 && delai <= 15) aDesSuivisProches = true;
+        
+        if (joursMin === null || delai < joursMin) {
+          joursMin = delai;
+        }
+      }
+    }
+
+    if (aDesSuivisTraites && suivis.length > 0) {
+      return { jours: -1, niveau: 'termine', label: '✓ Terminé', class: 'text-success' };
+    }
+
+    if (aDesSuivisUrgents) {
+      return { jours: joursMin, niveau: 'urgent', label: `⚠️ Urgent (${joursMin} j)`, class: 'text-danger fw-bold' };
+    }
+
+    if (aDesSuivisProches) {
+      return { jours: joursMin, niveau: 'proche', label: `⏰ Bientôt (${joursMin} j)`, class: 'text-warning' };
+    }
+
+    if (joursMin !== null && joursMin > 15) {
+      return { jours: joursMin, niveau: 'normal', label: `${joursMin} jours`, class: 'text-info' };
+    }
+
+    return { jours: null, niveau: 'aucun', label: '—', class: 'text-muted' };
+  }
+
+  calculerDelai(suivi: SuiviJuridique): number | null {
+    if (!suivi) return null;
+    
+    if (suivi.jugement && suivi.jugement.trim() !== '' && suivi.dateAudience) {
+      return -1;
+    }
+    
+    const aujourdhui = new Date();
+    aujourdhui.setHours(0, 0, 0, 0);
+    
+    if (suivi.dateAudience) {
+      const dateAudience = new Date(suivi.dateAudience);
+      dateAudience.setHours(0, 0, 0, 0);
+      const diffTime = dateAudience.getTime() - aujourdhui.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    if (suivi.dateCreation) {
+      const dateCreation = new Date(suivi.dateCreation);
+      dateCreation.setHours(0, 0, 0, 0);
+      const dateLimite = new Date(dateCreation);
+      dateLimite.setDate(dateLimite.getDate() + 30);
+      const diffTime = dateLimite.getTime() - aujourdhui.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+    
+    return null;
+  }
+
+  chargerNotifCount(): void {
+    this.dossierService.getNombreNonLues().subscribe({
+      next: (count) => {
+        this.notifCount = count;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.notifCount = 0;
+      }
+    });
+  }
+
+  // ==================== MÉTHODES DE FILTRAGE ====================
+  appliquerFiltres(): void {
+    this.dossiersFiltres = [...this.tousDossiers];
+
+    // Filtre par statut
+    if (this.filtreStatut) {
+      if (this.filtreStatut === 'URGENT') {
+        this.dossiersFiltres = this.dossiersFiltres.filter(d => 
+          this.calculerDelaiGlobal(d).niveau === 'urgent'
+        );
+      } else if (this.filtreStatut === 'PROCHE') {
+        this.dossiersFiltres = this.dossiersFiltres.filter(d => 
+          this.calculerDelaiGlobal(d).niveau === 'proche'
+        );
+      } else {
+        this.dossiersFiltres = this.dossiersFiltres.filter(d => d.statut === this.filtreStatut);
+      }
+    }
+
+    // Filtre par délai
+    if (this.filtreDelai) {
+      const jours = parseInt(this.filtreDelai);
+      this.dossiersFiltres = this.dossiersFiltres.filter(d => {
+        const delai = this.calculerDelaiGlobal(d);
+        if (this.filtreDelai === 'EXPIRED') {
+          return delai.jours !== null && delai.jours < 0;
+        }
+        return delai.jours !== null && delai.jours <= jours && delai.jours >= 0;
+      });
+    }
+
+    // Filtre par recherche
+    if (this.recherche.trim()) {
+      const terme = this.recherche.toLowerCase();
+      this.dossiersFiltres = this.dossiersFiltres.filter(d =>
+        d.ip?.toLowerCase().includes(terme) ||
+        d.beneficiaire?.toLowerCase().includes(terme) ||
+        d.referenceInterne?.toLowerCase().includes(terme) ||
+        d.numeroFacture?.toLowerCase().includes(terme)
+      );
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  resetFiltres(): void {
+    this.filtreStatut = '';
+    this.filtreDelai = '';
+    this.recherche = '';
+    this.dossiersFiltres = [...this.tousDossiers];
+    this.cdr.detectChanges();
+  }
+
+  getLibelleFiltre(): string {
+    const statuts: Record<string, string> = {
+      'URGENT': 'Urgents',
+      'PROCHE': 'Délai proche',
+      'INCOMPLET': 'Incomplets',
+      'EN_INSTANCE': 'En instance',
+      'EN_APPEL': 'En appel',
+      'EN_CASSATION': 'En cassation',
+      'ENVOYE_AVOCAT': 'Envoyés à l\'avocat',
+      'VALIDE_POUR_TRANSMISSION': 'Validés pour transmission',
+      'CLOTURE': 'Clôturés'
+    };
+    return statuts[this.filtreStatut] || this.filtreStatut;
+  }
+
+  // ==================== ALERTES RÉCAPITULATIVES ====================
+  genererAlertesRecap(): void {
+    this.alertesRecap = [];
+    let alerteCount = 0;
+
+    const dossiersUrgents = this.tousDossiers.filter(d => 
+      this.calculerDelaiGlobal(d).niveau === 'urgent'
+    );
+    if (dossiersUrgents.length > 0) {
+      this.alertesRecap.push({
+        type: 'danger',
+        icone: 'bi bi-exclamation-triangle-fill',
+        message: `${dossiersUrgents.length} dossier(s) urgent(s) nécessitent une action immédiate !`
+      });
+      alerteCount += dossiersUrgents.length;
+    }
+
+    const dossiersProches = this.tousDossiers.filter(d => 
+      this.calculerDelaiGlobal(d).niveau === 'proche'
+    );
+    if (dossiersProches.length > 0) {
+      this.alertesRecap.push({
+        type: 'warning',
+        icone: 'bi bi-clock-fill',
+        message: `${dossiersProches.length} dossier(s) ont un délai d'action dans moins de 15 jours.`
+      });
+      alerteCount += dossiersProches.length;
+    }
+
+    const incompletsAnciens = this.tousDossiers.filter(d => 
+      d.statut === 'INCOMPLET' && d.dateMiseAJour && this.calculerJoursDepuis(d.dateMiseAJour) > 30
+    );
+    if (incompletsAnciens.length > 0) {
+      this.alertesRecap.push({
+        type: 'warning',
+        icone: 'bi bi-folder-symlink-fill',
+        message: `${incompletsAnciens.length} dossier(s) incomplet(s) depuis plus de 30 jours.`
+      });
+      alerteCount += incompletsAnciens.length;
+    }
+
+    this.alertesCount = alerteCount;
+  }
+
+  calculerJoursDepuis(date: string): number {
+    const aujourdhui = new Date();
+    const dateDebut = new Date(date);
+    const diffTime = aujourdhui.getTime() - dateDebut.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  voirDossier(id: number | undefined): void {
+    if (id) this.router.navigate(['/dossier-detail', id]);
+  }
+
+  get cartes() {
+    return [
+      { label: 'Total dossiers', valeur: this.stats.total, icone: 'bi-folder2-open', couleur: 'primary', lien: '/liste-dossiers', montant: false },
+      { label: 'En attente', valeur: this.stats.enAttente, icone: 'bi-hourglass-split', couleur: 'warning', lien: '/liste-dossiers', montant: false },
+      { label: 'Envoyés à l\'avocat', valeur: this.stats.envoyeAvocat, icone: 'bi-send', couleur: 'info', lien: '/liste-dossiers', montant: false },
+      { label: 'En instance', valeur: this.stats.enInstance, icone: 'bi-bank', couleur: 'secondary', lien: '/liste-dossiers', montant: false },
+      { label: 'Incomplets', valeur: this.stats.incomplet, icone: 'bi-exclamation-triangle', couleur: 'danger', lien: '/liste-dossiers', montant: false },
+      { label: 'Clôturés', valeur: this.stats.cloture, icone: 'bi-check-circle', couleur: 'success', lien: '/liste-dossiers', montant: false },
+      { label: 'Montant impayé (MAD)', valeur: this.stats.montantImpaye, icone: 'bi-cash-stack', couleur: 'orange', lien: null, montant: true },
+    ];
+  }
+
+  getStatutClass(statut?: string): string {
+    return getBadgeClass(statut);
+  }
+
+  setMenu(menu: string): void {
+    this.activeMenu = menu;
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}
+
+
+/* Version2
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { DossierService } from '../../services/dossier.service';
+import { AuthService } from '../../services/auth.service';
+import { Stats, DossierRecent, Notification, getBadgeClass, getLibelle, Dossier } from '../../models/dossier';
 
 @Component({
   selector: 'app-dashboard',
@@ -258,7 +648,7 @@ export class Dashboard implements OnInit {
     return joursRestants <= delai && joursRestants >= 0;
   }*/
 
-  calculerJoursRestants(dateLimite: string): number {
+/*  calculerJoursRestants(dateLimite: string): number {
     const aujourdhui = new Date();
     const dateFin = new Date(dateLimite);
     const diffTime = dateFin.getTime() - aujourdhui.getTime();
@@ -357,7 +747,7 @@ export class Dashboard implements OnInit {
     this.alertesCount = alerteCount;
   }*/
 
-  voirDossier(id: number | undefined): void {
+/*  voirDossier(id: number | undefined): void {
     if (id) this.router.navigate(['/dossier-detail', id]);
   }
 
@@ -387,7 +777,9 @@ export class Dashboard implements OnInit {
   }
 }
 
-/*import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+/*version 1
+
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule }      from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { DossierService }    from '../../services/dossier.service';

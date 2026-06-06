@@ -1,8 +1,4 @@
-<!-- (sidebar + dossiers récents + layout complet) + (cartes stats dynamiques via getter + spinner) -->
-
 <div class="dashboard-wrapper">
-
-  
 
   <!------------------ CONTENU PRINCIPAL  -->
   <main class="dashboard-content">
@@ -17,8 +13,6 @@
       </div>
       <span class="badge-sgfi">SGFI</span>
     </div>
-
-    
 
     <!--SPINNER DE CHARGEMENT -->
     <div *ngIf="chargement" class="loading-state">
@@ -92,21 +86,22 @@
         </div>
       </div>
 
-
-
       <!-- ==================== BARRE DE FILTRES ==================== -->
       <div class="filters-bar">
         <div class="filter-group">
           <label><i class="bi bi-funnel"></i> Statut</label>
           <select [(ngModel)]="filtreStatut" (change)="appliquerFiltres()" class="filter-select">
             <option value="">Tous les statuts</option>
-            <option value="URGENT">⚠️ Urgents (délai imminent)</option>
+            <option value="URGENT">⚠️ Urgents (délai ≤ 7j)</option>
+            <option value="PROCHE">⏰ Délai proche (8-15j)</option>
+            <option value="IMPORTE_CCR">📥 Importé CCR</option>
+            <option value="EN_ATTENTE_PRISE_EN_CHARGE">⏳ En attente</option>
             <option value="INCOMPLET">📋 Incomplets</option>
+            <option value="VALIDE_POUR_TRANSMISSION">🔓 Validé pour transmission</option>
+            <option value="ENVOYE_AVOCAT">📤 Envoyé à l'avocat</option>
             <option value="EN_INSTANCE">⚖️ En instance</option>
             <option value="EN_APPEL">📢 En appel</option>
             <option value="EN_CASSATION">🏛️ En cassation</option>
-            <option value="ENVOYE_AVOCAT">📤 Envoyé à l'avocat</option>
-            <option value="VALIDE_POUR_TRANSMISSION">✅ Validé pour transmission</option>
             <option value="CLOTURE">✔️ Clôturés</option>
           </select>
         </div>
@@ -122,7 +117,7 @@
           </select>
         </div>
 
-        <div class="filter-group">
+        <div class="filter-group search-group">
           <label><i class="bi bi-search"></i> Recherche</label>
           <input type="text" [(ngModel)]="recherche" (input)="appliquerFiltres()" placeholder="IP, bénéficiaire, référence..." class="filter-input" />
         </div>
@@ -132,7 +127,21 @@
         </button>
       </div>
 
-
+      <!-- Résumé des filtres actifs -->
+      <div class="filters-summary" *ngIf="filtreStatut || filtreDelai || recherche">
+        <span class="filter-badge" *ngIf="filtreStatut">
+          <i class="bi bi-funnel"></i> Statut: {{ getLibelleFiltre() }}
+          <i class="bi bi-x-circle" (click)="filtreStatut = ''; appliquerFiltres()"></i>
+        </span>
+        <span class="filter-badge" *ngIf="filtreDelai">
+          <i class="bi bi-calendar"></i> Délai: {{ filtreDelai === 'EXPIRED' ? 'Dépassé' : filtreDelai + ' jours' }}
+          <i class="bi bi-x-circle" (click)="filtreDelai = ''; appliquerFiltres()"></i>
+        </span>
+        <span class="filter-badge" *ngIf="recherche">
+          <i class="bi bi-search"></i> "{{ recherche }}"
+          <i class="bi bi-x-circle" (click)="recherche = ''; appliquerFiltres()"></i>
+        </span>
+      </div>
 
       <!-- TABLEAU DES DOSSIERS FILTRÉS -->
       <div class="table-section">
@@ -153,7 +162,7 @@
                 <th>N° Facture</th>
                 <th>Montant (MAD)</th>
                 <th>Statut</th>
-                <th>Délai action</th>
+                <th>Délai global</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -167,13 +176,15 @@
                 <td>
                   <span class="badge" [ngClass]="getBadgeClass(d.statut)">{{ getLibelle(d.statut) }}</span>
                 </td>
-                <td>
-                  <span *ngIf="d.dateLimiteAction" [class.text-danger]="estUrgent(d)" [class.text-warning]="estProche(d)">
-                    {{ calculerJoursRestants(d.dateLimiteAction) }} jours
+                <td class="delai-col">
+                  <span [class]="calculerDelaiGlobal(d).class">
+                    <i class="bi" [class.bi-hourglass-split]="calculerDelaiGlobal(d).niveau === 'urgent'" 
+                       [class.bi-clock]="calculerDelaiGlobal(d).niveau === 'proche'"
+                       [class.bi-check-circle]="calculerDelaiGlobal(d).niveau === 'termine'"></i>
+                    {{ calculerDelaiGlobal(d).label }}
                   </span>
-                  <span *ngIf="!d.dateLimiteAction" class="text-muted">—</span>
-                 </td>
-                <td>
+                </td>
+                <td class="actions-col">
                   <button class="btn-voir" (click)="voirDossier(d.idDossier)">
                     <i class="bi bi-eye"></i> Voir
                   </button>
