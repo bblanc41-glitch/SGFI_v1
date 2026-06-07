@@ -7,7 +7,7 @@ import { Dossier, getBadgeClass, getLibelle, PieceJointe, HistoriqueDossier } fr
 import { SuiviJuridique } from '../../models/suivi-juridique';
 import { AuthService } from '../../services/auth.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 @Component({
   selector: 'app-detail-dossier',
   standalone: true,
@@ -110,7 +110,8 @@ export class DetailDossier implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private cdr: ChangeDetectorRef,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar // pour le sms confirmation apres generation bordereau
   ) {
     this.formModif = this.fb.group({
       beneficiaire: [''],
@@ -654,6 +655,87 @@ export class DetailDossier implements OnInit {
     this.bordereauDesignations.splice(index, 1);
   }
 
+genererBordereauPourDossier(): void {
+  if (!this.dossier) return;
+  
+  if (!this.bordereauDestinataire.trim()) {
+    this.snackBar.open('Veuillez renseigner le nom du destinataire (avocat).', 'Fermer', {
+      duration: 4000,
+      panelClass: ['error-snackbar']
+    });
+    return;
+  }
+  if (!this.bordereauAdresse.trim()) {
+    this.snackBar.open('Veuillez renseigner l\'adresse.', 'Fermer', {
+      duration: 4000,
+      panelClass: ['error-snackbar']
+    });
+    return;
+  }
+  if (!this.bordereauVille) {
+    this.snackBar.open('Veuillez sélectionner la ville.', 'Fermer', {
+      duration: 4000,
+      panelClass: ['error-snackbar']
+    });
+    return;
+  }
+
+  const payload = {
+    ids: [this.dossier.idDossier!],
+    destinataire: this.bordereauDestinataire,
+    cour: this.bordereauCour,
+    adresse: this.bordereauAdresse,
+    ville: this.bordereauVille,
+    observation: this.bordereauObservation,
+    designations: this.bordereauDesignations,
+    dossiersDetails: [{
+      referenceInterne: this.dossier.referenceInterne || '',
+      ip: this.dossier.ip,
+      beneficiaire: this.dossier.beneficiaire || '',
+      cin: this.dossier.cin || '',
+      numeroFacture: this.dossier.numeroFacture,
+      montant: this.dossier.montant || 0,
+      rap: this.dossier.rap || 0
+    }]
+  };
+
+  this.dossierService.genererBordereauEnvoi(payload).subscribe({
+    next: (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bordereau_${this.dossier?.referenceInterne}_${new Date().toISOString().slice(0,19)}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      // Notification de succès
+      this.snackBar.open('✓ Bordereau généré avec succès !', 'Fermer', {
+        duration: 5000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['success-snackbar']
+      });
+      
+      this.bordereauGenerationSuccess = true;
+      this.bordereauGenerationMessage = 'Bordereau généré avec succès !';
+      setTimeout(() => this.fermerFormulaireBordereau(), 2000);
+      this.cdr.detectChanges();
+    },
+    error: (err: any) => {
+      console.error(err);
+      this.snackBar.open('❌ Erreur lors de la génération du bordereau', 'Fermer', {
+        duration: 5000,
+        panelClass: ['error-snackbar']
+      });
+      this.bordereauGenerationMessage = 'Erreur lors de la génération du bordereau.';
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+
+
+  /*Version 1
   genererBordereauPourDossier(): void {
     if (!this.dossier) return;
     
@@ -708,7 +790,7 @@ export class DetailDossier implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
+  }*/
 
 
   // ==================== MÉTHODES DE CALCUL DE DÉLAI ====================
