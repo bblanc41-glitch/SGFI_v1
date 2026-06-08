@@ -98,7 +98,7 @@ public class BordereauService {
         }
 
         // ==================== RÉFÉRENCE ====================
-        String ref = "Réf :		/" + LocalDate.now().getYear();
+        String ref = "Réf :     /" + LocalDate.now().getYear();
         Paragraph refPara = new Paragraph(ref, normalFont);
         refPara.setAlignment(Element.ALIGN_RIGHT);
         document.add(refPara);
@@ -131,7 +131,7 @@ public class BordereauService {
         document.add(destBlock);
         document.add(new Paragraph(" "));
 
-        // ==================== TABLEAU DES DÉSIGNATIONS ====================
+     // ==================== TABLEAU DES DÉSIGNATIONS ====================
         List<Map<String, Object>> designations = (List<Map<String, Object>>) payload.get("designations");
         List<Map<String, Object>> dossiersDetails = (List<Map<String, Object>>) payload.get("dossiersDetails");
         String observation = (String) payload.get("observation");
@@ -157,25 +157,39 @@ public class BordereauService {
 
         // Construction de la cellule Désignation dans l'ordre : OBJET -> Puis liste à puce (Factures + Autres désignations)
         Paragraph designationPara = new Paragraph();
-        designationPara.setLeading(1.5f * 10, 1.5f);  // Interligne 1.5 (taille police 10 * 1.5)
+        designationPara.setLeading(1.5f * 10, 1.5f);  // Interligne 1.5
 
         // 1. OBJET en gras
         designationPara.add(new Chunk("Recouvrement de l'ordre de recette concernant :\n\n", tableBoldFont));
 
         // 2. Liste à puce pour toutes les désignations (Factures + Autres)
-        
+
         // 2.1 Désignation des factures (avec puce)
         if (nombreDossiers > 0 && dossiersDetails != null) {
             int totalFactures = nombreDossiers;
             double totalRap = 0;
-            for (Map<String, Object> dossierDetail : dossiersDetails) {
+            
+            // Vérifier si un seul dossier
+            if (nombreDossiers == 1) {
+                // Cas d'un seul dossier : afficher le numéro de facture et le montant
+                Map<String, Object> dossierDetail = dossiersDetails.get(0);
+                String numeroFacture = (String) dossierDetail.get("numeroFacture");
                 Object rapObj = dossierDetail.get("rap");
                 double rap = rapObj != null ? Double.parseDouble(rapObj.toString()) : 0;
-                totalRap += rap;
+                
+                String facturesText = "Facture N° " + numeroFacture + " d'un montant de " + String.format("%.2f", rap) + " DH";
+                designationPara.add(new Chunk("• " + facturesText + "\n", tableContentFont));
+            } else {
+                // Cas de plusieurs dossiers : afficher le récapitulatif global
+                for (Map<String, Object> dossierDetail : dossiersDetails) {
+                    Object rapObj = dossierDetail.get("rap");
+                    double rap = rapObj != null ? Double.parseDouble(rapObj.toString()) : 0;
+                    totalRap += rap;
+                }
+                
+                String facturesText = "Factures concernées (" + totalFactures + " dossiers) pour un montant total de " + String.format("%.2f", totalRap) + " DH";
+                designationPara.add(new Chunk("• " + facturesText + "\n", tableContentFont));
             }
-            
-            String facturesText = "Factures concernées (" + totalFactures + " dossier" + (totalFactures > 1 ? "s" : "") + ") pour un montant total de " + String.format("%.2f", totalRap) + " DH";
-            designationPara.add(new Chunk("• " + facturesText + "\n", tableContentFont));
         }
 
         // 2.2 Autres désignations (avec puce)
@@ -191,7 +205,7 @@ public class BordereauService {
                 designationPara.add(new Chunk("• " + nom + "\n", tableContentFont));
             }
         }
-        
+
         // Ajout de deux lignes vides à la fin du contenu Désignation
         designationPara.add(new Chunk("\n\n", tableContentFont));
 
@@ -203,9 +217,15 @@ public class BordereauService {
         // 1. Quantité pour l'OBJET (espace)
         quantityPara.add(new Chunk(" \n\n", tableContentFont));
 
-        // 2. Quantité pour les factures (nombre total de dossiers)
+        // 2. Quantité pour les factures
         if (nombreDossiers > 0 && dossiersDetails != null) {
-            quantityPara.add(new Chunk(String.valueOf(nombreDossiers) + "\n", tableContentFont));
+            if (nombreDossiers == 1) {
+                // Un seul dossier : quantité = 1
+                quantityPara.add(new Chunk("1\n", tableContentFont));
+            } else {
+                // Plusieurs dossiers : quantité = nombre de dossiers
+                quantityPara.add(new Chunk(String.valueOf(nombreDossiers) + "\n", tableContentFont));
+            }
         }
 
         // 3. Quantités pour les autres désignations
@@ -220,7 +240,7 @@ public class BordereauService {
                 quantityPara.add(new Chunk(quantite + "\n", tableContentFont));
             }
         }
-        
+
         // Ajout de deux lignes vides à la fin du contenu Quantité
         quantityPara.add(new Chunk("\n\n", tableContentFont));
 

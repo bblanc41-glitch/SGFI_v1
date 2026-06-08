@@ -172,8 +172,10 @@ export class DetailDossier implements OnInit {
   calculerRap(): void {
     let montant = this.modif.montant || 0;
     if (montant < 0) { montant = -montant; }
+
     let paiement = this.modif.paiement || 0;
     if (paiement < 0) { paiement = -paiement; }
+    
     const resultat = (montant < paiement ? 0 : montant - paiement);
     this.modif.rap = resultat;
     this.formModif.patchValue({ rap: resultat }, { emitEvent: false });
@@ -527,6 +529,7 @@ export class DetailDossier implements OnInit {
     this.modalSafeUrl = null;
   }
 
+  /*
   genererBordereau(): void {
     this.dossierService.genererBordereau(this.dossierId).subscribe({
       next: (blob: Blob) => {
@@ -539,7 +542,10 @@ export class DetailDossier implements OnInit {
       },
       error: (err: any) => alert('Impossible de générer le bordereau.')
     });
-  }
+  }*/
+
+    
+
 
   // ========== MÉTHODES D'AFFICHAGE ==========
   getBadgeClass(statut?: string): string { 
